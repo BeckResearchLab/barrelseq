@@ -52,15 +52,26 @@ Use cases:
     * for specified subset of samples or all
     * Arguments:
         * input config file
-        *
-        *
-        *
-        *
-        * (optional) regroup: create a new group with samples separated by ,
+        * output name prefix, default = {A}_vs_{B}
+        * groupA - group must exist in sample info, must have a last run date for all samples in group
+        * groupB - group must exist in sample info, must have a last run date for all samples in group
+        * (optional) regroupA - create a new group with samples separated by ',', must have last run date for all samples in listed samples, e.g. --regroupA EPS=uMax1,uMax2 would define a new temporary group EPS with samples uMax1, uMax2
+        * (optional) regroupB - create a new group with samples separated by ',', must have last run date for all samples in listed samples
+        * shrinkage estimator - default is 'apeglm', string must be one of 'normal', 'apeglm', 'ashr'
+        * output transformation - default is 'vst', string must be one of 'vst' or 'rlog'
+        * produce figures - default is T
         *
 * Extract data table `extract-data`
     * for specified subset of samples of all
 	* as TPM, raw counts, RPKM
     * Arguments:
         * input config file
-* Sample vs. sample parity plots (optional)
+        * output name
+        * output values, default='TPM', must be string from list 'TPM', 'raw', 'RPKM'
+        * output type, default='tsv', must be string from list 'tsv', 'csv', 'xls'
+        * sample name list, default is None, otherwise comma separated string of sample names, must all have last run date
+        *
+        *
+        *
+        *
+* Sample vs. sample parity plots (optional) - possibly deprecated
