@@ -1,14 +1,15 @@
 Use cases:
 * Generate default configuration file `generate-config`
     * Arguments:
-        * output file
-        * path to bwa - file must exist
-        * path to samtools - file must exist
-        * path to htseq-count - file must exist
-        * path to R - file must exist
+        * output file - must be writable
+        * path to bwa - file must exist & be readable
+        * path to samtools - file must exist & be readable
+        * path to htseq-count - file must exist & be readable
+        * path to R - file must exist & be readable
+        * path to project directory - directory must exist & be writable
         * reference human readable name
-        * path to reference gff - file must exist
-        * path to reference nt fasta - file must exist
+        * path to reference gff - file must exist & be readable
+        * path to reference nt fasta - file must exist & be readable
         * pair-ended (T/F)
         * pass-through options for bwa mem
         * pass-through options for htseq-count
@@ -18,25 +19,31 @@ Use cases:
         *
         *
         *
+        *
+        *
+        *
 * Validate configuration file `validate-config`
     * Arguments:
-        * input config file - file must exist
+        * input config file - file must exist & be readable
 * Add a sample to the sample set `add-sample`
+    * compute md5sum for each fastq
+    * sample_info will have separate date fields for added, last_run, last_analyzed
     * Arguments:
-        * input config file - file must exist
+        * input config file - file must exist & be readable
         * sample name (uMax_run1) - must start with letter, no dashes or periods (use underscores)
         * sample group (uMax) - must start with letter, no dashes or periods (use underscores)
-        * path to fastq(s) - file must exist
-        * 
-        *
-        *
-        *
-        *
+        * path to fastq(s) - file(s) must exist & be readable
+        * full sample description - must not contain tabs or line breaks
         *
 * Run alignments and compute read attribution `run`
+    * can run the commands directly or make bash files for inspection or other uses
     * Arguments:
-        * input config file
-        * processes to use
+        * input config file - file must exist & be readable
+        * number of processes to use - must be integer 1>=1, default=1
+        * name of samples from sample_info to run - default is all samples with empty last_run date
+        * save as script - default is F, when T shell scripts are written with the commands, nothing is run
+        *
+        *
         *
         *
         *
