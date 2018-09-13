@@ -27,10 +27,10 @@ Use cases:
         * input config file - file must exist & be readable
 * Add a sample to the sample set `add-sample`
     * compute md5sum for each fastq
-    * sample_info will have separate date fields for added, last_run, last_analyzed
+    * sample\_info will have separate date fields for added, last\_run, last\_analyzed
     * Arguments:
         * input config file - file must exist & be readable
-        * sample name (uMax_run1) - must start with letter, no dashes or periods (use underscores)
+        * sample name (uMax\_run1) - must start with letter, no dashes or periods (use underscores)
         * sample group (uMax) - must start with letter, no dashes or periods (use underscores)
         * path to fastq(s) - file(s) must exist & be readable
         * full sample description - must not contain tabs or line breaks
@@ -40,7 +40,7 @@ Use cases:
     * Arguments:
         * input config file - file must exist & be readable
         * number of processes to use - must be integer 1>=1, default=1, not passed to bwa
-        * name of samples from sample_info to run - default is all samples with empty last_run date
+        * name of samples from sample\_info to run - default is all samples with empty last\_run date
         * save as script - default is F, when T shell scripts are written with the commands, nothing is run
         * preserve intermediate results - default is F, when T commands that remove files, e.g. SAM, are not generated
         *
@@ -52,7 +52,7 @@ Use cases:
     * for specified subset of samples or all
     * Arguments:
         * input config file
-        * output name prefix, default = {A}_vs_{B}
+        * output name prefix, default = {A}\_vs\_{B}
         * groupA - group must exist in sample info, must have a last run date for all samples in group
         * groupB - group must exist in sample info, must have a last run date for all samples in group
         * (optional) regroupA - create a new group with samples separated by ',', must have last run date for all samples in listed samples, e.g. --regroupA EPS=uMax1,uMax2 would define a new temporary group EPS with samples uMax1, uMax2
