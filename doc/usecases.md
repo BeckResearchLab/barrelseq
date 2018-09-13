@@ -39,10 +39,10 @@ Use cases:
     * can run the commands directly or make bash files for inspection or other uses
     * Arguments:
         * input config file - file must exist & be readable
-        * number of processes to use - must be integer 1>=1, default=1
+        * number of processes to use - must be integer 1>=1, default=1, not passed to bwa
         * name of samples from sample_info to run - default is all samples with empty last_run date
         * save as script - default is F, when T shell scripts are written with the commands, nothing is run
-        *
+        * preserve intermediate results - default is F, when T commands that remove files, e.g. SAM, are not generated
         *
         *
         *
