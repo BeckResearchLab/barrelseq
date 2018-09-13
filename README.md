@@ -7,3 +7,5 @@ Dependencies:
 * htseq
 * bwa
 * samtools
+* R
+    * deseq2
