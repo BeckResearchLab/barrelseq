@@ -65,7 +65,6 @@ def edit(args):
     # drop elements with None values
     edited_config_dict = {k: v for k, v in edited_config_dict.items() if v}
     config = load(args)
-    print(type(config))
     config_dict = vars(config)
     config_dict.update(edited_config_dict)
     save(args, config_dict)
