@@ -54,7 +54,7 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-# Modified from https://stackoverflow.com/questions/20094215/argparse-subparser-monolithic-help-output
+# Modified from argparse-subparser-monolithic-help-output for recursion
 class _HelpAction(argparse._HelpAction):
     """This object is used to provide a custom help action.
 
@@ -138,6 +138,10 @@ def parser_create():
     parser_config.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
+    subparser_config = parser_config.add_subparsers(
+            title='config file utility commands',
+            help='config file module help'
+            )
 
     # sample sub-command parser
     parser_sample = subparsers.add_parser('sample',
@@ -147,14 +151,57 @@ def parser_create():
     parser_sample.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
+    subparser_sample = parser_sample.add_subparsers(
+            title='sample management commands',
+            help='sample management help'
+            )
+    # sample add sub-command parser
+    parser_sample_add = subparser_sample.add_parser('add',
+            help='help for adding a sample',
+            add_help=False
+            )
+    parser_sample_add.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    parser_sample_add.add_argument('--name', required=True,
+            help='name of sample to be added; must start with a letter and contain only letters, numbers and underscores(_)'
+            )
+    parser_sample_add.add_argument('--group', required=True,
+            help='name of group this sample belong to; will be added if it doesn\'t exist; must start with a letter and contain only letters, numbers and underscores'
+            )
+    parser_sample_add.add_argument('--fastq-files', required=True,
+            help='list of full pathes to fastq file; separated by spaces',
+            nargs='+'
+            )
+    parser_sample_add.add_argument('--description', required=True,
+            help='complete description of sample; in single quotes, not containing any tabs or new lines'
+            )
+    # sample remove sub-command parser
+    parser_sample_remove = subparser_sample.add_parser('remove',
+            help='help for removing a sample - DANGER',
+            add_help=False
+            )
+    parser_sample_remove.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    parser_sample_remove.add_argument('--name', required=True,
+            help='name of sample to be removed - DANGER! - this will remove a sample from the sample metadata file and may remove alignment and summary files (workspace files)'
+            )
+    parser_sample_remove.add_argument('--dont-remove-files',
+            help='workspace files for sample will be preserved'
+            )
 
     # engine sub-command parser
     parser_engine = subparsers.add_parser('engine',
-            help='executation engine help',
+            help='execution engine help',
             add_help=False
             )
     parser_engine.add_argument('--help', action=_HelpAction,
             help='full help listing'
+            )
+    subparser_engine = parser_engine.add_subparsers(
+            title='execution engine commands',
+            help='execution engine module help'
             )
 
     # analysis sub-command parser
@@ -166,7 +213,7 @@ def parser_create():
             help='full help listing'
             )
     subparser_analysis = parser_analysis.add_subparsers(
-            title='analysis commands'.format(barrelseq.SCRIPT_NAME),
+            title='analysis commands',
             help='analysis module help'
             )
     # deseq2 sub-command parser
