@@ -63,6 +63,16 @@ class _HelpAction(argparse._HelpAction):
     """
 
     def _recurse_parser(self, parser, prefix):
+        """Method to recurse an argparse parse tree while printing.
+
+        This recursive function enumerates the argparse parse tree
+        while printing the help text for each element in the tree.
+        Between elements, a line made of ``-`` delineates pages.
+
+        Recursive
+
+        Side effect: prints to stdout
+        """
         # retrieve subparsers from parser
         subparsers_actions = [
                 action for action in parser._actions
@@ -84,6 +94,13 @@ class _HelpAction(argparse._HelpAction):
                 self._recurse_parser(subparser, new_prefix)
     
     def __call__(self, parser, namespace, values, option_string=None):
+        """Entry point to help action for argparse trees
+
+        This is the top level help printer for an argparse tree of 
+        sub-commands (subparsers).  It prints the top level help,
+        recurses the tree while printing each elements help text
+        and then exits the parser.
+        """
         parser.print_help()
         self._recurse_parser(parser, '')
         parser.exit()
@@ -127,10 +144,17 @@ def parser_create():
             help='sample management help',
             add_help=False
             )
+    parser_sample.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
 
     # engine sub-command parser
     parser_engine = subparsers.add_parser('engine',
-            help='executation engine help'
+            help='executation engine help',
+            add_help=False
+            )
+    parser_engine.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
 
     # analysis sub-command parser
@@ -143,12 +167,15 @@ def parser_create():
             )
     subparser_analysis = parser_analysis.add_subparsers(
             title='analysis commands'.format(barrelseq.SCRIPT_NAME),
-            description='list of commands supported',
             help='analysis module help'
             )
     # deseq2 sub-command parser
     parser_deseq2 = subparser_analysis.add_parser('deseq2',
-            help='DESeq2 analysis help'
+            help='DESeq2 analysis help',
+            add_help=False
+            )
+    parser_deseq2.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
     parser_deseq2.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
@@ -178,7 +205,12 @@ def parser_create():
             )
     # example sub-command parser as template for future analyses
     parser_example = subparser_analysis.add_parser('example', 
-            help='example analysis help')
+            help='example analysis help',
+            add_help=False
+            )
+    parser_example.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
     parser_example.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
             )
@@ -188,7 +220,11 @@ def parser_create():
 
     # extract sub-command parser
     parser_extract = subparsers.add_parser('extract',
-            help='data extraction help'
+            help='data extraction help',
+            add_help=False
+            )
+    parser_extract.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
     parser_extract.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
