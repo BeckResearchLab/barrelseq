@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 import barrelseq
@@ -111,6 +112,13 @@ class _HelpAction(argparse._HelpAction):
         parser.exit()
 
 
+def _value_is_positive(value):
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError(
+                '{0} must be >= 1'.format(ivalue))
+
+
 def parser_create():
     """Factory function for creating a parser object.
 
@@ -159,67 +167,86 @@ def parser_create():
     parser_config_create.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
-    parser_config_create.add_argument('--config-file', type=argparse.FileType('w'),
+    def _parser_config_editor_add_args(parser_config_editor,
+            enforce_required=True):
+        # note the following is required regardless of enforce_required value
+        parser_config_editor.add_argument('--config-file',
+            type=argparse.FileType('a+'),
             required=True, help='output configuration file'
             )
-    parser_config_create.add_argument('--project-name', required=True,
+        parser_config_editor.add_argument('--project-name', 
+            required=enforce_required,
             help='human readable name of project'
             )
-    parser_config_create.add_argument('--bwa-path',
-            type=argparse.FileType('r'),
+        parser_config_editor.add_argument('--bwa-path',
+            type=str,
             help='path to bwa executable',
             default='bwa'
             )
-    parser_config_create.add_argument('--samtools-path',
-            type=argparse.FileType('r'),
+        parser_config_editor.add_argument('--samtools-path',
+            type=str,
             help='path to samtools executable',
             default='samtools'
             )
-    parser_config_create.add_argument('--htseq-count-path',
-            type=argparse.FileType('r'),
+        parser_config_editor.add_argument('--htseq-count-path',
+            type=str,
             help='path to htseq-count executable',
             default='htseq-count'
             )
-    parser_config_create.add_argument('--R-path', type=argparse.FileType('r'),
+        parser_config_editor.add_argument('--R-path', type=str,
             help='path to R executable',
             default='R'
             )
-    parser_config_create.add_argument('--project-dir',
-            required=True, help='path to project directory; '
+        parser_config_editor.add_argument('--project-dir',
+            required=enforce_required, help='path to project directory; '
                 'this should be a full path, thus it starts with /'
             )
-    parser_config_create.add_argument('--reference-name',
-            type=argparse.FileType('r'),
-            required=True, help='human readable name of reference species'
+        parser_config_editor.add_argument('--reference-name',
+            type=str,
+            required=enforce_required,
+            help='human readable name of reference species'
             )
-    parser_config_create.add_argument('--reference-gff-path', 
-            type=argparse.FileType('r'),
-            required=True, help='path to reference GFF file'
+        parser_config_editor.add_argument('--reference-gff-path', 
+            type=str,
+            required=enforce_required, help='path to reference GFF file'
             )
-    parser_config_create.add_argument('--reference-fasta-path',
-            type=argparse.FileType('r'),
-            required=True, help='path to reference nucleotide FASTA file'
+        parser_config_editor.add_argument('--reference-fasta-path',
+            type=str,
+            required=enforce_required,
+            help='path to reference nucleotide FASTA file'
             )
-    parser_config_create.add_argument('--pair-ended',
+        parser_config_editor.add_argument('--pair-ended',
             action='store_true',
             help='this study\'s data is from pair-ended sequencing runs'
             )
-    parser_config_create.add_argument('--opts-bwa-mem', type=str,
+        parser_config_editor.add_argument('--opts-bwa-mem', type=str,
             help='passthrough options for bwa in mem mode step'
             )
-    parser_config_create.add_argument('--opts-htseq-count', type=str,
+        parser_config_editor.add_argument('--opts-htseq-count', type=str,
             help='passthrough options for htseq-count step'
             )
-    parser_config_create.add_argument('--opts-samtools-sam2bam', type=str,
+        parser_config_editor.add_argument('--opts-samtools-sam2bam', type=str,
             help='passthrough options for samtools SAM to BAM conversion step'
             )
-    parser_config_create.add_argument('--opts-samtools-sort', type=str,
+        parser_config_editor.add_argument('--opts-samtools-sort', type=str,
             help='passthrough options for samtools BAM sort step'
             )
-    parser_config_create.add_argument('--opts-samtools-index', type=str,
+        parser_config_editor.add_argument('--opts-samtools-index', type=str,
             help='passthrough options for samtools BAM index step'
             )
+        return
+    _parser_config_editor_add_args(parser_config_create);
     parser_config_create.set_defaults(func=config.create)
+    # config editor sub-command parser
+    parser_config_edit = subparser_config.add_parser('edit',
+            help='help for editing a config file',
+            add_help=False
+            )
+    parser_config_edit.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    _parser_config_editor_add_args(parser_config_edit, enforce_required=False);
+    parser_config_edit.set_defaults(func=config.edit)
     # config validate sub-command parser
     parser_config_validate = subparser_config.add_parser('validate',
             help='help for validating a config file',
@@ -313,13 +340,7 @@ def parser_create():
     parser_engine_run.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
             )
-    def value_is_positive(value):
-        ivalue = int(value)
-        if ivalue < 1:
-            raise argparse.ArgumentTypeError(
-                    '{0} must be >= 1'.format(ivalue)
-                    )
-    parser_engine_run.add_argument('--processes', type=value_is_positive,
+    parser_engine_run.add_argument('--processes', type=_value_is_positive,
             help='number of parallel processes to run'
             )
     parser_engine_run.add_argument('--samples',
