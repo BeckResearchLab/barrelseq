@@ -270,6 +270,9 @@ def parser_create():
             help='help for adding a sample',
             add_help=False
             )
+    parser_sample_add.add_argument('--config-file', type=argparse.FileType('r'),
+            required=True, help='configuration file'
+            )
     parser_sample_add.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
@@ -290,6 +293,7 @@ def parser_create():
             help='complete description of sample; in single quotes, '
             'not containing any tabs or new lines'
             )
+    parser_sample_add.set_defaults(func=sample.add)
     # sample remove sub-command parser
     parser_sample_remove = subparser_sample.add_parser('remove',
             help='help for removing a sample - DANGER',
@@ -297,6 +301,9 @@ def parser_create():
             )
     parser_sample_remove.add_argument('--help', action=_HelpAction,
             help='full help listing'
+            )
+    parser_sample_remove.add_argument('--config-file', type=argparse.FileType('r'),
+            required=True, help='configuration file'
             )
     parser_sample_remove.add_argument('--name', required=True,
             help='name of sample to be removed - DANGER! - this will '
@@ -306,6 +313,7 @@ def parser_create():
     parser_sample_remove.add_argument('--dont-remove-files',
             help='workspace files for sample will be preserved'
             )
+    parser_sample_remove.set_defaults(func=sample.remove)
 
     # engine sub-command parser
     parser_engine = subparsers.add_parser('engine',
