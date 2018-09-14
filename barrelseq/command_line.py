@@ -61,21 +61,31 @@ class _HelpAction(argparse._HelpAction):
     This object is designed to produce a complete help listing at the top
     level of the command.  Purely a convienence, but a nice one.
     """
-    
-    def __call__(self, parser, namespace, values, option_string=None):
-        parser.print_help()
+
+    def _recurse_parser(self, parser, prefix):
         # retrieve subparsers from parser
         subparsers_actions = [
                 action for action in parser._actions
                     if isinstance(action, argparse._SubParsersAction)
-                    ]
+                ]
         # there will probably only be one subparser_action,
         # but better safe than sorry
         for subparsers_action in subparsers_actions:
             # get all subparsers and print help
             for choice, subparser in subparsers_action.choices.items():
-                print('\n{0} {1}'.format(choice, (78 - len(choice)) * '-'))
+                if not prefix:
+                    new_prefix = choice
+                else:
+                    new_prefix = prefix + ' ' + choice
+                print('\n{0} {1}'.format(new_prefix,
+                                    (78 - len(new_prefix)) * '-'))
                 print(subparser.format_help())
+                # recurse through subparsers if they exist
+                self._recurse_parser(subparser, new_prefix)
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.print_help()
+        self._recurse_parser(parser, '')
         parser.exit()
 
 
@@ -105,12 +115,17 @@ def parser_create():
 
     # config sub-command parser
     parser_config = subparsers.add_parser('config',
-            help='config file utility help'
+            help='config file utility help',
+            add_help=False
+            )
+    parser_config.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
 
     # sample sub-command parser
     parser_sample = subparsers.add_parser('sample',
-            help='sample management help'
+            help='sample management help',
+            add_help=False
             )
 
     # engine sub-command parser
@@ -120,7 +135,11 @@ def parser_create():
 
     # analysis sub-command parser
     parser_analysis = subparsers.add_parser('analysis',
-            help='data analysis help'
+            help='data analysis help',
+            add_help=False
+            )
+    parser_analysis.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
     subparser_analysis = parser_analysis.add_subparsers(
             title='analysis commands'.format(barrelseq.SCRIPT_NAME),
