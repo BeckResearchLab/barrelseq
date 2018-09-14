@@ -1,4 +1,4 @@
-__all__ = ['command_line']
+from .command_line import *
 
 __version__ = '0.1.0'
 

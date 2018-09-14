@@ -5,7 +5,7 @@ import barrelseq
 
 
 def main():
-    """Main entry point into command line tool for 
+    """Main entry point into command line tool for this package.
 
     This is the main function for the barrelseq package.  It parses the
     arguments from ``sys.argv`` with a call to ``parse_args`` and then
@@ -53,6 +53,32 @@ def parse_args(args):
     parser = parser_create()
     return parser.parse_args(args)
 
+
+# Modified from https://stackoverflow.com/questions/20094215/argparse-subparser-monolithic-help-output
+class _HelpAction(argparse._HelpAction):
+    """This object is used to provide a custom help action.
+
+    This object is designed to produce a complete help listing at the top
+    level of the command.  Purely a convienence, but a nice one.
+    """
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.print_help()
+        # retrieve subparsers from parser
+        subparsers_actions = [
+                action for action in parser._actions
+                    if isinstance(action, argparse._SubParsersAction)
+                    ]
+        # there will probably only be one subparser_action,
+        # but better safe than sorry
+        for subparsers_action in subparsers_actions:
+            # get all subparsers and print help
+            for choice, subparser in subparsers_action.choices.items():
+                print('\n{0} {1}'.format(choice, (78 - len(choice)) * '-'))
+                print(subparser.format_help())
+        parser.exit()
+
+
 def parser_create():
     """Factory function for creating a parser object.
 
@@ -64,17 +90,19 @@ def parser_create():
 
     """
     # create the top-level parser for sub-commands
-    parser = argparse.ArgumentParser(prog=barrelseq.SCRIPT_NAME)
-    subparsers = parser.add_subparsers(
-            title='{0} commands'.format(barrelseq.SCRIPT_NAME),
-            description='list of commands supported',
-            help='command help'
+    parser = argparse.ArgumentParser(prog=barrelseq.SCRIPT_NAME, add_help=False)
+    parser.add_argument('--help', action=_HelpAction,
+            help='full help listing'
             )
     parser.add_argument('--version', action='version', 
             version='{0} {1}'.format(barrelseq.SCRIPT_NAME,
                 barrelseq.__version__
                 )
             )
+    subparsers = parser.add_subparsers(
+            title='{0} commands'.format(barrelseq.SCRIPT_NAME)
+            )
+
     # config sub-command parser
     parser_config = subparsers.add_parser('config',
             help='config file utility help'
