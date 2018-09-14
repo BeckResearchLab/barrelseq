@@ -5,6 +5,12 @@ import yaml
 
 
 CONFIG_ARGS_KEY_EXCLUDED = ['config_file', 'command', 'config_command', 'func']
+REQUIRED_CONFIG_OPTS = ['project_dir', 'project_name', 'reference_fasta_path',
+        'reference_gff_path', 'reference_name', 'bwa_path', 'samtools_path',
+        'htseq_count_path', 'R_path', 'pair_ended', 'opts_bwa_mem',
+        'opts_samtools_index', 'opts_samtools_sam2bam', 'opts_samtools_sort'
+        ]
+
 
 def create(args):
     """Take ``argparse.Namespace``, clean it up and save it as YAML.
@@ -72,8 +78,14 @@ def edit(args):
 
 
 def validate(args):
-    print(args)
-    return
+    config = load(args)
+    config_dict = vars(config)
+    for option in REQUIRED_CONFIG_OPTS:
+        if option not in config_dict:
+            raise RuntimeError('Required config option {0} is missing from '
+                    'the config file {1}'.format(option, args.config_file))
+    print('config file validation succeeded')
+    return config
 
 
 def load(args):

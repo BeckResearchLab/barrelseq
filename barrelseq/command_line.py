@@ -18,7 +18,6 @@ def main():
     and actual heavy lifting.
     """
     args = parse_args(sys.argv[1:])
-    print(sys.argv[1:])
     args.func(args)
     sys.exit(0)
 
