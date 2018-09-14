@@ -158,18 +158,22 @@ def parser_create():
             )
     parser_config_create.add_argument('--bwa-path',
             type=argparse.FileType('r'),
-            required=True, help='path to bwa executable'
+            help='path to bwa executable',
+            default='bwa'
             )
     parser_config_create.add_argument('--samtools-path',
             type=argparse.FileType('r'),
-            required=True, help='path to samtools executable'
+            help='path to samtools executable',
+            default='samtools'
             )
     parser_config_create.add_argument('--htseq-count-path',
             type=argparse.FileType('r'),
-            required=True, help='path to htseq-count executable'
+            help='path to htseq-count executable',
+            default='htseq-count'
             )
     parser_config_create.add_argument('--R', type=argparse.FileType('r'),
-            required=True, help='path to R executable'
+            help='path to R executable',
+            default='R'
             )
     parser_config_create.add_argument('--project-dir',
             type=argparse.FileType('r'),
@@ -182,16 +186,29 @@ def parser_create():
             )
     parser_config_create.add_argument('--reference-gff-path', 
             type=argparse.FileType('r'),
-            required=True, help='path to'
+            required=True, help='path to reference GFF file'
             )
-    parser_config_create.add_argument('--', type=argparse.FileType('r'),
-            required=True, help='path to'
+    parser_config_create.add_argument('--reference-fasta-path',
+            type=argparse.FileType('r'),
+            required=True, help='path to reference nucleotide FASTA file'
             )
-    parser_config_create.add_argument('--', type=argparse.FileType('r'),
-            required=True, help='path to'
+    parser_config_create.add_argument('--pair-ended',
+            help='this study\'s data is from pair-ended sequencing runs'
             )
-    parser_config_create.add_argument('--', type=argparse.FileType('r'),
-            required=True, help='path to'
+    parser_config_create.add_argument('--opts-bwa-mem', type=str,
+            help='passthrough options for bwa in mem mode step'
+            )
+    parser_config_create.add_argument('--opts-htseq-count', type=str,
+            help='passthrough options for htseq-count step'
+            )
+    parser_config_create.add_argument('--opts-samtools-sam2bam', type=str,
+            help='passthrough options for samtools SAM to BAM conversion step'
+            )
+    parser_config_create.add_argument('--opts-samtools-sort', type=str,
+            help='passthrough options for samtools BAM sort step'
+            )
+    parser_config_create.add_argument('--opts-samtoosl-index', type=str,
+            help='passthrough options for samtools BAM index step'
             )
 
     # sample sub-command parser
