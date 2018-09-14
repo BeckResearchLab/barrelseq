@@ -2,7 +2,11 @@ import argparse
 import sys
 
 import barrelseq
-
+from barrelseq import config
+from barrelseq import sample
+from barrelseq import engine
+from barrelseq import analysis
+from barrelseq import extract
 
 def main():
     """Main entry point into command line tool for this package.
@@ -13,7 +17,7 @@ def main():
     and actual heavy lifting.
     """
     try:
-        parser = parse_args(sys.argv[1:])
+        args = parse_args(sys.argv[1:])
     #except TypeError as e:
     #    print(repr(e))
     #    sys.exit(1)
@@ -27,6 +31,7 @@ def main():
         raise e
         sys.exit(1)
     # do something interesting here
+    args.func(args)
     sys.exit(0)
 
 
@@ -143,7 +148,7 @@ def parser_create():
     subparser_config = parser_config.add_subparsers(
             title='config file utility commands',
             help='config file module help',
-            dest='config command'
+            dest='config_command'
             )
     subparser_config.required = True
     # config create sub-command parser
@@ -215,6 +220,7 @@ def parser_create():
     parser_config_create.add_argument('--opts-samtools-index', type=str,
             help='passthrough options for samtools BAM index step'
             )
+    parser_config_create.set_defaults(func=config.create)
     # config validate sub-command parser
     parser_config_validate = subparser_config.add_parser('validate',
             help='help for validating a config file',
@@ -226,6 +232,7 @@ def parser_create():
     parser_config_validate.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file for validation'
             )
+    parser_config_validate.set_defaults(func=config.validate)
 
     # sample sub-command parser
     parser_sample = subparsers.add_parser('sample',
@@ -238,7 +245,7 @@ def parser_create():
     subparser_sample = parser_sample.add_subparsers(
             title='sample management commands',
             help='sample management help',
-            dest='sample command'
+            dest='sample_command'
             )
     subparser_sample.required = True
     # sample add sub-command parser
@@ -294,7 +301,7 @@ def parser_create():
     subparser_engine = parser_engine.add_subparsers(
             title='execution engine commands',
             help='execution engine module help',
-            dest='engine command'
+            dest='engine_command'
             )
     subparser_engine.required = True
     parser_engine_run = subparser_engine.add_parser('run',
@@ -327,6 +334,7 @@ def parser_create():
             action='store_true',
             help='intermediate processing files such as uncompressed SAM files will be saved for later inspection'
             )
+    parser_engine_run.set_defaults(func=engine.run)
 
     # analysis sub-command parser
     parser_analysis = subparsers.add_parser('analysis',
@@ -339,7 +347,7 @@ def parser_create():
     subparser_analysis = parser_analysis.add_subparsers(
             title='analysis commands',
             help='analysis module help',
-            dest='analysis command'
+            dest='analysis_command'
             )
     subparser_analysis.required = True
     # deseq2 sub-command parser
@@ -380,6 +388,7 @@ def parser_create():
     parser_deseq2.add_argument('--generate-figures',
             help='should figures be generated'
             )
+    parser_deseq2.set_defaults(func=analysis.deseq2)
     # example sub-command parser as template for future analyses
     parser_example = subparser_analysis.add_parser('example', 
             help='example analysis help',
@@ -394,6 +403,7 @@ def parser_create():
     parser_example.add_argument('--integer-parameter', type=int,
             help='example integer parameter for analysis'
             )
+    parser_example.set_defaults(func=analysis.example)
 
     # extract sub-command parser
     parser_extract = subparsers.add_parser('extract',
@@ -423,4 +433,5 @@ def parser_create():
             nargs='*',
             help='what samples should be included in the output'
             )
+    parser_extract.set_defaults(func=extract)
     return parser
