@@ -42,7 +42,7 @@ def parse_args(args):
         *args: Variable length argument list.
 
     Returns:
-        ``Namespace`` object with parsed arguments.
+        ``argparse.Namespace`` object with parsed arguments.
 
     Raises:
         TypeError: If argument types fail type checking.
