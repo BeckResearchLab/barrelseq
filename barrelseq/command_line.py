@@ -127,8 +127,10 @@ def parser_create():
                 )
             )
     subparsers = parser.add_subparsers(
-            title='{0} commands'.format(barrelseq.SCRIPT_NAME)
+            title='{0} commands'.format(barrelseq.SCRIPT_NAME),
+            dest='command'
             )
+    subparsers.required = True
 
     # config sub-command parser
     parser_config = subparsers.add_parser('config',
@@ -140,8 +142,10 @@ def parser_create():
             )
     subparser_config = parser_config.add_subparsers(
             title='config file utility commands',
-            help='config file module help'
+            help='config file module help',
+            dest='config command'
             )
+    subparser_config.required = True
     # config create sub-command parser
     parser_config_create = subparser_config.add_parser('create',
             help='help for creating a config file',
@@ -233,8 +237,10 @@ def parser_create():
             )
     subparser_sample = parser_sample.add_subparsers(
             title='sample management commands',
-            help='sample management help'
+            help='sample management help',
+            dest='sample command'
             )
+    subparser_sample.required = True
     # sample add sub-command parser
     parser_sample_add = subparser_sample.add_parser('add',
             help='help for adding a sample',
@@ -287,8 +293,10 @@ def parser_create():
             )
     subparser_engine = parser_engine.add_subparsers(
             title='execution engine commands',
-            help='execution engine module help'
+            help='execution engine module help',
+            dest='engine command'
             )
+    subparser_engine.required = True
     parser_engine_run = subparser_engine.add_parser('run',
             help='execution engine run mode help',
             add_help=False
@@ -330,8 +338,10 @@ def parser_create():
             )
     subparser_analysis = parser_analysis.add_subparsers(
             title='analysis commands',
-            help='analysis module help'
+            help='analysis module help',
+            dest='analysis command'
             )
+    subparser_analysis.required = True
     # deseq2 sub-command parser
     parser_deseq2 = subparser_analysis.add_parser('deseq2',
             help='DESeq2 analysis help',
