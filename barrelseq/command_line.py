@@ -345,14 +345,17 @@ def parser_create():
             )
     parser_deseq2.add_argument('--output', type=str, required=True,
             help='output file prefix, defaults to '
-            '{groupA name}_vs_{groupB name')
-    parser_deseq2.add_argument('--group-A', type=str,
+            '{groupA name}_vs_{groupB name}')
+    # two mutally exclusive groups make sure we always have one A and one B
+    groupA = parser_deseq2.add_mutually_exclusive_group(required=True)
+    groupA.add_argument('--group-A', type=str,
             help='name of sample condition of first group')
-    parser_deseq2.add_argument('--group-B', type=str,
-            help='name of sample condition of second group')
-    parser_deseq2.add_argument('--regroup-A', type=str,
+    groupA.add_argument('--regroup-A', type=str,
             help='ad-hoc first group, e.g. EPS=uMax1,uMax2')
-    parser_deseq2.add_argument('--regroup-B', type=str,
+    groupB = parser_deseq2.add_mutually_exclusive_group(required=True)
+    groupB.add_argument('--group-B', type=str,
+            help='name of sample condition of second group')
+    groupB.add_argument('--regroup-B', type=str,
             help='ad-hoc second group, e.g. EPS=uMax1,uMax2')
     parser_deseq2.add_argument('--shrinkage', 
             choices=['normal', 'apeglm', 'ashr'],
