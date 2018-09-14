@@ -180,12 +180,11 @@ def parser_create():
             help='path to htseq-count executable',
             default='htseq-count'
             )
-    parser_config_create.add_argument('--R', type=argparse.FileType('r'),
+    parser_config_create.add_argument('--R-path', type=argparse.FileType('r'),
             help='path to R executable',
             default='R'
             )
     parser_config_create.add_argument('--project-dir',
-            type=argparse.FileType('r'),
             required=True, help='path to project directory; '
                 'this should be a full path, thus it starts with /'
             )
