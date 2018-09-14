@@ -193,6 +193,7 @@ def parser_create():
             required=True, help='path to reference nucleotide FASTA file'
             )
     parser_config_create.add_argument('--pair-ended',
+            action='store_true',
             help='this study\'s data is from pair-ended sequencing runs'
             )
     parser_config_create.add_argument('--opts-bwa-mem', type=str,
@@ -288,6 +289,40 @@ def parser_create():
             title='execution engine commands',
             help='execution engine module help'
             )
+    parser_engine_run = subparser_engine.add_parser('run',
+            help='execution engine run mode help',
+            add_help=False
+            )
+    parser_engine_run.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    parser_engine.add_argument('--config-file', type=argparse.FileType('r'),
+            required=True, help='input configuration file'
+            )
+    def value_is_positive(value):
+        if not isinstance(value, int):
+            raise argparse.ArgumentTypeError(
+                    '{0} is not an integer'.format(value)
+                    )
+        else:
+            if value < 1:
+                raise argparse.ArgumentTypeError(
+                        '{0} must be >= 1'.format(value)
+                        )
+    parser_engine.add_argument('--processes', type=value_is_positive,
+            help='number of parallel processes to run'
+            )
+    parser_engine.add_argument('--samples',
+            nargs='+',
+            help='what samples should processed; default is all that are unprocessed'
+            )
+    parser_engine.add_argument('--save-as-script', action='store_true',
+            help='instead of running the analysis, generate shell scripts to run the commands; useful for manual inspection of the commands or for submission to a queueing system'
+            )
+    parser_engine.add_argument('--save-intermediate-files',
+            action='store_true',
+            help='intermediate processing files such as uncompressed SAM files will be saved for later inspection'
+            )
 
     # analysis sub-command parser
     parser_analysis = subparsers.add_parser('analysis',
@@ -313,7 +348,8 @@ def parser_create():
             required=True, help='input configuration file'
             )
     parser_deseq2.add_argument('--output', type=str, required=True,
-            help='output file prefix')
+            help='output file prefix, defaults to '
+            '{groupA name}_vs_{groupB name')
     parser_deseq2.add_argument('--group-A', type=str,
             help='name of sample condition of first group')
     parser_deseq2.add_argument('--group-B', type=str,
@@ -375,7 +411,7 @@ def parser_create():
             help='what file format should be used for the output'
             )
     parser_extract.add_argument('--samples',
-            nargs='*',
+            nargs='+',
             help='what samples should be included in the output'
             )
     return parser
