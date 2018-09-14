@@ -1,11 +1,11 @@
 # barrelseq
-Bacteria &amp; archaea, isolate and simple community RNA-Seq analysis pipeline
+Bacteria &amp; Archaea, Rna-seq, Resequenceing (EL) for isolate and simple community analysis pipeline
 --
 
 Dependencies:
 * biopython
-* htseq
 * bwa
 * samtools
+* htseq
 * R
     * deseq2
