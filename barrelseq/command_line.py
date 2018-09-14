@@ -178,7 +178,7 @@ def parser_create():
     parser_config_create.add_argument('--project-dir',
             type=argparse.FileType('r'),
             required=True, help='path to project directory; '
-                'this should be a full path meaning that it starts with /'
+                'this should be a full path, thus it starts with /'
             )
     parser_config_create.add_argument('--reference-name',
             type=argparse.FileType('r'),
@@ -207,8 +207,19 @@ def parser_create():
     parser_config_create.add_argument('--opts-samtools-sort', type=str,
             help='passthrough options for samtools BAM sort step'
             )
-    parser_config_create.add_argument('--opts-samtoosl-index', type=str,
+    parser_config_create.add_argument('--opts-samtools-index', type=str,
             help='passthrough options for samtools BAM index step'
+            )
+    # config validate sub-command parser
+    parser_config_validate = subparser_config.add_parser('validate',
+            help='help for validating a config file',
+            add_help=False
+            )
+    parser_config_validate.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    parser_config_validate.add_argument('--config-file', type=argparse.FileType('r'),
+            required=True, help='input configuration file for validation'
             )
 
     # sample sub-command parser
