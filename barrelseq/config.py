@@ -7,7 +7,7 @@ import yaml
 CONFIG_ARGS_KEY_EXCLUDED = ['config_file', 'command', 'config_command', 'func']
 
 def create(args):
-    """Take an argsparse Namespace object, clean it up and save it as YAML.
+    """Take ``argparse.Namespace``, clean it up and save it as YAML.
 
     This function removes some keys from the argparse Namespace object
     returned by the ``parser.parse_args`` function and saves the cleaned
