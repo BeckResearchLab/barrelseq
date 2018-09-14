@@ -142,6 +142,57 @@ def parser_create():
             title='config file utility commands',
             help='config file module help'
             )
+    # config create sub-command parser
+    parser_config_create = subparser_config.add_parser('create',
+            help='help for creating a config file',
+            add_help=False
+            )
+    parser_config_create.add_argument('--help', action=_HelpAction,
+            help='full help listing'
+            )
+    parser_config_create.add_argument('--config-file', type=argparse.FileType('w'),
+            required=True, help='output configuration file'
+            )
+    parser_config_create.add_argument('--project-name', required=True,
+            help='human readable name of project'
+            )
+    parser_config_create.add_argument('--bwa-path',
+            type=argparse.FileType('r'),
+            required=True, help='path to bwa executable'
+            )
+    parser_config_create.add_argument('--samtools-path',
+            type=argparse.FileType('r'),
+            required=True, help='path to samtools executable'
+            )
+    parser_config_create.add_argument('--htseq-count-path',
+            type=argparse.FileType('r'),
+            required=True, help='path to htseq-count executable'
+            )
+    parser_config_create.add_argument('--R', type=argparse.FileType('r'),
+            required=True, help='path to R executable'
+            )
+    parser_config_create.add_argument('--project-dir',
+            type=argparse.FileType('r'),
+            required=True, help='path to project directory; '
+                'this should be a full path meaning that it starts with /'
+            )
+    parser_config_create.add_argument('--reference-name',
+            type=argparse.FileType('r'),
+            required=True, help='human readable name of reference species'
+            )
+    parser_config_create.add_argument('--reference-gff-path', 
+            type=argparse.FileType('r'),
+            required=True, help='path to'
+            )
+    parser_config_create.add_argument('--', type=argparse.FileType('r'),
+            required=True, help='path to'
+            )
+    parser_config_create.add_argument('--', type=argparse.FileType('r'),
+            required=True, help='path to'
+            )
+    parser_config_create.add_argument('--', type=argparse.FileType('r'),
+            required=True, help='path to'
+            )
 
     # sample sub-command parser
     parser_sample = subparsers.add_parser('sample',
@@ -164,17 +215,21 @@ def parser_create():
             help='full help listing'
             )
     parser_sample_add.add_argument('--name', required=True,
-            help='name of sample to be added; must start with a letter and contain only letters, numbers and underscores(_)'
+            help='name of sample to be added; must start with a letter '
+            'and contain only letters, numbers and underscores(_)'
             )
     parser_sample_add.add_argument('--group', required=True,
-            help='name of group this sample belong to; will be added if it doesn\'t exist; must start with a letter and contain only letters, numbers and underscores'
+            help='name of group this sample belong to; will be added if '
+            'it doesn\'t exist; must start with a letter and contain only '
+            'letters, numbers and underscores'
             )
     parser_sample_add.add_argument('--fastq-files', required=True,
             help='list of full pathes to fastq file; separated by spaces',
             nargs='+'
             )
     parser_sample_add.add_argument('--description', required=True,
-            help='complete description of sample; in single quotes, not containing any tabs or new lines'
+            help='complete description of sample; in single quotes, '
+            'not containing any tabs or new lines'
             )
     # sample remove sub-command parser
     parser_sample_remove = subparser_sample.add_parser('remove',
@@ -185,7 +240,9 @@ def parser_create():
             help='full help listing'
             )
     parser_sample_remove.add_argument('--name', required=True,
-            help='name of sample to be removed - DANGER! - this will remove a sample from the sample metadata file and may remove alignment and summary files (workspace files)'
+            help='name of sample to be removed - DANGER! - this will '
+            'remove a sample from the sample metadata file and may '
+            'remove alignment and summary files (workspace files)'
             )
     parser_sample_remove.add_argument('--dont-remove-files',
             help='workspace files for sample will be preserved'
