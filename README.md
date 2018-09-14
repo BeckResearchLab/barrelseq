@@ -3,6 +3,7 @@ Bacteria &amp; Archaea, Rna-seq, Resequenceing (EL) for isolate and simple commu
 --
 
 Dependencies:
+* pyyaml
 * biopython
 * bwa
 * samtools

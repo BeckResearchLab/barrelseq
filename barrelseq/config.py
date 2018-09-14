@@ -1,7 +1,10 @@
 import argparse
 
+import yaml
+
+
 def create(args):
-    print(args)
+    print(yaml.dump(args))
     return
 
 
