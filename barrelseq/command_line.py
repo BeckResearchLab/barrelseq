@@ -21,8 +21,8 @@ def main():
         print(repr(e))
         sys.exit(1)
     except Exception, e:
-        print("{0}: An unhandled exception occured while parsing command "
-              "line arguments.".format(sys.argv[0]))
+        print('{0}: An unhandled exception occured while parsing command '
+              'line arguments.'.format(sys.argv[0]))
         print(repr(e))
         sys.exit(1)
     # do something interesting here
@@ -62,6 +62,17 @@ def parser_create():
         ``argparse.ArgumentParser`` object suitable for parsing arguments.
 
     """
-    argparse.ArgumentParser()
-    parser.add_argument...
+    # create the top-level parser for sub-commands
+    parser = argparse.ArgumentParser(prog=SCRIPT_NAME)
+    subparsers = parser.add_subparsers(help='command help')
+    # config sub-command parser
+    parser_config = subparsers.add_parser('config', help='config file utility help')
+    # sample sub-command parser
+    parser_sample = subparsers.add_parser('sample', help='sample management help')
+    # engine sub-command parser
+    parser_engine = subparsers.add_parser('engine', help='executation engine help')
+    # deseq2 sub-command parser
+    parser_deseq2 = subparsers.add_parser('deseq2', help='DESeq2 analysis help')
+    # extract sub-command parser
+    parser_extract = subparsers.add_parser('extract', help='data extraction help')
     return parser
