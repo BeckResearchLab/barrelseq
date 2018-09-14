@@ -42,13 +42,26 @@ def parse_args(args):
         *args: Variable length argument list.
 
     Returns:
-        ``argparse.ArgumentParser`` object of parsed arguments.
+        ``Namespace`` object with parsed arguments.
 
     Raises:
         TypeError: If argument types fail type checking.
         ValueError: If argument values fail pre-checks.
 
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument...
+    parser = parser_create()
     return parser.parse_args(args)
+
+def parser_create():
+    """Factory function for creating a parser object.
+
+    This factory function creates an argparse parser object for use by
+    ``parse_args`` and the unit testing harness.
+
+    Returns:
+        ``argparse.ArgumentParser`` object suitable for parsing arguments.
+
+    """
+    argparse.ArgumentParser()
+    parser.add_argument...
+    return parser
