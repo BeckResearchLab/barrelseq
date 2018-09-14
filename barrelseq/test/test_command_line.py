@@ -41,6 +41,18 @@ class TestCommandLine(unittest.TestCase):
         self.assertEqual(args.config_command, 'create')
         args.config_file.close()
 
+    def test_parser_required(self):
+        args = self.parser.parse_args(self.test_parse_list)
+        self.assertEqual(args.project_name, PROJECT_NAME)
+        self.assertEqual(args.reference_name, REFERENCE_NAME)
+        args.config_file.close()
+
+    def test_parser_optional(self):
+        args = self.parser.parse_args(self.test_parse_list)
+        self.assertEqual(args.bwa_path, BWA_PATH)
+        self.assertEqual(args.opts_bwa_mem, BWA_MEM_OPTS)
+        args.config_file.close()
+
     def test_parser_default(self):
         args = self.parser.parse_args(self.test_parse_list)
         self.assertEqual(args.pair_ended, False)
