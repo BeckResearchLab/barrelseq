@@ -113,6 +113,8 @@ class _HelpAction(argparse._HelpAction):
 
 
 def _value_is_positive(value):
+    """Type checker for argparse parser that requires an int >=1.
+    """
     ivalue = int(value)
     if ivalue < 1:
         raise argparse.ArgumentTypeError(
@@ -168,10 +170,10 @@ def parser_create():
             help='full help listing'
             )
     def _parser_config_editor_add_args(parser_config_editor,
-            enforce_required=True):
+            enforce_required=True, use_default=True):
         # note the following is required regardless of enforce_required value
         parser_config_editor.add_argument('--config-file',
-            type=argparse.FileType('a+'),
+            type=argparse.FileType('r+'),
             required=True, help='output configuration file'
             )
         parser_config_editor.add_argument('--project-name', 
@@ -181,21 +183,21 @@ def parser_create():
         parser_config_editor.add_argument('--bwa-path',
             type=str,
             help='path to bwa executable',
-            default='bwa'
+            default='bwa' if use_default else None
             )
         parser_config_editor.add_argument('--samtools-path',
             type=str,
             help='path to samtools executable',
-            default='samtools'
+            default='samtools' if use_default else None
             )
         parser_config_editor.add_argument('--htseq-count-path',
             type=str,
             help='path to htseq-count executable',
-            default='htseq-count'
+            default='htseq-count' if use_default else None
             )
         parser_config_editor.add_argument('--R-path', type=str,
             help='path to R executable',
-            default='R'
+            default='R' if use_default else None
             )
         parser_config_editor.add_argument('--project-dir',
             required=enforce_required, help='path to project directory; '
@@ -217,6 +219,7 @@ def parser_create():
             )
         parser_config_editor.add_argument('--pair-ended',
             action='store_true',
+            default=False if use_default else None,
             help='this study\'s data is from pair-ended sequencing runs'
             )
         parser_config_editor.add_argument('--opts-bwa-mem', type=str,
@@ -245,7 +248,9 @@ def parser_create():
     parser_config_edit.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
-    _parser_config_editor_add_args(parser_config_edit, enforce_required=False);
+    _parser_config_editor_add_args(parser_config_edit,
+            enforce_required=False,
+            use_default=False)
     parser_config_edit.set_defaults(func=config.edit)
     # config validate sub-command parser
     parser_config_validate = subparser_config.add_parser('validate',
