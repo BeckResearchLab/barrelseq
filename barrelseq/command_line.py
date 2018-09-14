@@ -17,21 +17,8 @@ def main():
     dispatches the appropriate sub-command function for further processing
     and actual heavy lifting.
     """
-    try:
-        args = parse_args(sys.argv[1:])
-    #except TypeError as e:
-    #    print(repr(e))
-    #    sys.exit(1)
-    #except ValueError as e:
-    #    print(repr(e))
-    #    sys.exit(1)
-    except Exception as e:
-        print('{0}: An unhandled exception occured while parsing command '
-              'line arguments.'.format(sys.argv[0]))
-        print(repr(e))
-        raise e
-        sys.exit(1)
-    # do something interesting here
+    args = parse_args(sys.argv[1:])
+    print(sys.argv[1:])
     args.func(args)
     sys.exit(0)
 
