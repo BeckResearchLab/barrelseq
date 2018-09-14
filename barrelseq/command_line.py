@@ -296,30 +296,26 @@ def parser_create():
     parser_engine_run.add_argument('--help', action=_HelpAction,
             help='full help listing'
             )
-    parser_engine.add_argument('--config-file', type=argparse.FileType('r'),
+    parser_engine_run.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
             )
     def value_is_positive(value):
-        if not isinstance(value, int):
+        ivalue = int(value)
+        if ivalue < 1:
             raise argparse.ArgumentTypeError(
-                    '{0} is not an integer'.format(value)
+                    '{0} must be >= 1'.format(ivalue)
                     )
-        else:
-            if value < 1:
-                raise argparse.ArgumentTypeError(
-                        '{0} must be >= 1'.format(value)
-                        )
-    parser_engine.add_argument('--processes', type=value_is_positive,
+    parser_engine_run.add_argument('--processes', type=value_is_positive,
             help='number of parallel processes to run'
             )
-    parser_engine.add_argument('--samples',
-            nargs='+',
+    parser_engine_run.add_argument('--samples',
+            nargs='*',
             help='what samples should processed; default is all that are unprocessed'
             )
-    parser_engine.add_argument('--save-as-script', action='store_true',
+    parser_engine_run.add_argument('--save-as-script', action='store_true',
             help='instead of running the analysis, generate shell scripts to run the commands; useful for manual inspection of the commands or for submission to a queueing system'
             )
-    parser_engine.add_argument('--save-intermediate-files',
+    parser_engine_run.add_argument('--save-intermediate-files',
             action='store_true',
             help='intermediate processing files such as uncompressed SAM files will be saved for later inspection'
             )
@@ -411,7 +407,7 @@ def parser_create():
             help='what file format should be used for the output'
             )
     parser_extract.add_argument('--samples',
-            nargs='+',
+            nargs='*',
             help='what samples should be included in the output'
             )
     return parser
