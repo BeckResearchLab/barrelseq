@@ -5,7 +5,7 @@ import barrelseq
 
 
 def main():
-    """Main entry point into command line tool for barrelseq.
+    """Main entry point into command line tool for 
 
     This is the main function for the barrelseq package.  It parses the
     arguments from ``sys.argv`` with a call to ``parse_args`` and then
@@ -14,16 +14,17 @@ def main():
     """
     try:
         parser = parse_args(sys.argv[1:])
-    except TypeError, e:
-        print(repr(e))
-        sys.exit(1)
-    except ValueError, e:
-        print(repr(e))
-        sys.exit(1)
-    except Exception, e:
+    #except TypeError as e:
+    #    print(repr(e))
+    #    sys.exit(1)
+    #except ValueError as e:
+    #    print(repr(e))
+    #    sys.exit(1)
+    except Exception as e:
         print('{0}: An unhandled exception occured while parsing command '
               'line arguments.'.format(sys.argv[0]))
         print(repr(e))
+        raise e
         sys.exit(1)
     # do something interesting here
     sys.exit(0)
@@ -63,32 +64,49 @@ def parser_create():
 
     """
     # create the top-level parser for sub-commands
-    parser = argparse.ArgumentParser(prog=SCRIPT_NAME)
+    parser = argparse.ArgumentParser(prog=barrelseq.SCRIPT_NAME)
     subparsers = parser.add_subparsers(
-            title='{0} commands'.format(SCRIPT_NAME),
+            title='{0} commands'.format(barrelseq.SCRIPT_NAME),
             description='list of commands supported',
             help='command help'
             )
     parser.add_argument('--version', action='version', 
-            version='{0} {1}'.format(SCRIPT_NAME, __version__)
+            version='{0} {1}'.format(barrelseq.SCRIPT_NAME,
+                barrelseq.__version__
+                )
             )
     # config sub-command parser
-    parser_config = subparsers.add_parser('config', help='config file utility help')
+    parser_config = subparsers.add_parser('config',
+            help='config file utility help'
+            )
 
     # sample sub-command parser
-    parser_sample = subparsers.add_parser('sample', help='sample management help')
+    parser_sample = subparsers.add_parser('sample',
+            help='sample management help'
+            )
 
     # engine sub-command parser
-    parser_engine = subparsers.add_parser('engine', help='executation engine help')
+    parser_engine = subparsers.add_parser('engine',
+            help='executation engine help'
+            )
 
     # analysis sub-command parser
-    parser_analysis = subparsers.add_parser('analysis', help='data analysis help')
+    parser_analysis = subparsers.add_parser('analysis',
+            help='data analysis help'
+            )
+    subparser_analysis = parser_analysis.add_subparsers(
+            title='analysis commands'.format(barrelseq.SCRIPT_NAME),
+            description='list of commands supported',
+            help='analysis module help'
+            )
     # deseq2 sub-command parser
-    parser_deseq2 = parser_analysis.add_parser('deseq2', help='DESeq2 analysis help')
+    parser_deseq2 = subparser_analysis.add_parser('deseq2',
+            help='DESeq2 analysis help'
+            )
     parser_deseq2.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
             )
-    parser_deseq2.add_argument('--output', type=str, required=True.
+    parser_deseq2.add_argument('--output', type=str, required=True,
             help='output file prefix')
     parser_deseq2.add_argument('--group-A', type=str,
             help='name of sample condition of first group')
@@ -105,22 +123,26 @@ def parser_create():
             )
     parser_deseq2.add_argument('--transformation',
             choices=['vst', 'rlog'],
-            default='vst'
+            default='vst',
             help='variable stabilizing transformation or regularized log'
             )
     parser_deseq2.add_argument('--generate-figures',
             help='should figures be generated'
             )
     # example sub-command parser as template for future analyses
-    parser_example = parser_analysis.add_parser('example', 
+    parser_example = subparser_analysis.add_parser('example', 
             help='example analysis help')
-    parser_example.add_argument('--config-file', type=argparse.FileType('r'))
+    parser_example.add_argument('--config-file', type=argparse.FileType('r'),
+            required=True, help='input configuration file'
+            )
     parser_example.add_argument('--integer-parameter', type=int,
             help='example integer parameter for analysis'
             )
 
     # extract sub-command parser
-    parser_extract = subparsers.add_parser('extract', help='data extraction help')
+    parser_extract = subparsers.add_parser('extract',
+            help='data extraction help'
+            )
     parser_extract.add_argument('--config-file', type=argparse.FileType('r'),
             required=True, help='input configuration file'
             )
@@ -129,7 +151,7 @@ def parser_create():
             )
     parser_extract.add_argument('--values',
             choices=['TPM', 'raw', 'RPKM'],
-            default='TPM'
+            default='TPM',
             help='what values should be exported'
             )
     parser_extract.add_argument('--format',
@@ -141,8 +163,4 @@ def parser_create():
             nargs='*',
             help='what samples should be included in the output'
             )
-    parser_extract.add_argument()
-    parser_extract.add_argument()
-    parser_extract.add_argument()
-    parser_extract.add_argument()
     return parser
