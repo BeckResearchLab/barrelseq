@@ -45,6 +45,7 @@ class TestCommandLine(unittest.TestCase):
         args = self.parser.parse_args(self.test_parse_list)
         self.assertEqual(args.project_name, PROJECT_NAME)
         self.assertEqual(args.reference_name, REFERENCE_NAME)
+        self.assertEqual(args.reference_gff_path, GFF_PATH)
         args.config_file.close()
 
     def test_parser_optional(self):
