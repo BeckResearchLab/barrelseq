@@ -3,11 +3,466 @@ import os
 import sys
 
 import barrelseq
+from barrelseq.version import __version__
 from barrelseq import config
 from barrelseq import sample
 from barrelseq import engine
 from barrelseq import analysis
 from barrelseq import extract
+
+
+def _value_is_positive(value):
+    """Type checker for argparse parser that requires an int >=1.
+    """
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError(
+                '{0} must be >= 1'.format(ivalue))
+
+
+PARSE_TREE = [
+    ['--version', {
+        'action': 'version',
+        'version': '{} {}'.format(__name__.split('.')[0],
+            __version__)
+    }],
+    {
+        'title': '{} commands'.format(__name__.split('.')[0]),
+        'dest': 'command',
+        'required': True,
+        'help': 'top level commands',
+        'subcommands': [{
+            'command': 'sample',
+            'help': 'sample management',
+            'sub_tree': [{
+                'dest': 'sample_command',
+                'title': 'sample management',
+                'help': 'sample management commands',
+                'required': True,
+                'subcommands': [{
+                    'command': 'add',
+                    'help': 'adding samples',
+                    'title': 'sample add',
+                    'func': sample.add,
+                    'sub_tree': [
+                        ['--config-file', {
+                            'type': argparse.FileType('r'),
+                            'required': True,
+                            'help': 'input configuration file'
+                        }],
+                        ['--name', {
+                            'type': str,
+                            'required': True,
+                            'help': 'name of sample to be added; '
+                            'must start with a letter and contain '
+                            'only letters, numbers and underscores(_)'
+                        }],
+                        ['--group', {
+                            'type': str,
+                            'required': True,
+                            'help': 'name of group this sample belong '
+                            'to; will be added if it doesn\'t exist; '
+                            'must start with a letter and contain '
+                            'only letters, numbers and underscores'
+                        }],
+                        ['--fastq-files', {
+                            'required': True,
+                            'nargs': '+',
+                            'help': 'list of full pathes to fastq files'
+                        }],
+                        ['--description', {
+                            'required': True,
+                            'help': 'complete description of sample; in'
+                            'single quotes not containing any tabs or'
+                            'new lines'
+                        }]
+                    ]
+                }, {
+                    'command': 'remove',
+                    'help': 'removing samples - DANGER!',
+                    'title': 'sample remove',
+                    'func': sample.remove,
+                    'sub_tree': [
+                        ['--config-file', {
+                            'type': argparse.FileType('r'),
+                            'required': True,
+                            'help': 'input configuration file'
+                        }],
+                        ['--name', {
+                            'type': str,
+                            'required': True,
+                            'help': 'name of sample to be removed - '
+                            'DANGER! - this will remove a sample '
+                            'from the sample metadata file and '
+                            'may remove alignment and summary '
+                            'files (workspace files)'
+                        }],
+                        ['--dont-remove-files', {
+                            'action': 'store_true',
+                            'help': 'workspace files for sample will be preserved'
+                        }]
+                    ]
+                }]
+            }]
+        }, {
+            'command': 'engine',
+            'help': 'execution engine control',
+            'sub_tree': [{
+                'dest': 'engine_command',
+                'title': 'engine management',
+                'help': 'execution engine commands',
+                'required': True,
+                'subcommands': [{
+                    'command': 'run',
+                    'help': 'execution engine run mode',
+                    'title': 'engine run',
+                    'func': engine.run,
+                    'sub_tree': [
+                        ['--config-file', {
+                            'type': argparse.FileType('r'),
+                            'required': True,
+                            'help': 'input configuration file'
+                        }],
+                        ['--processes', {
+                            'type': _value_is_positive,
+                            'help': 'number of parallel processes to run'
+                        }],
+                        ['--samples', {
+                            'nargs': '*',
+                            'help': 'list of samples to be included in '
+                            'analysis, otherwise all eligible will '
+                            'be included'
+                        }],
+                        ['--save-as-scripts', {
+                            'action': 'store_true',
+                            'help': 'instead of running the analysis, '
+                            'generate shell scripts to run the '
+                            'commands; useful for manual inspection '
+                            'of the commands or for submission to a '
+                            'queueing system'
+                        }],
+                        ['--save-intermediate-files', {
+                            'action': 'store_true',
+                            'help': 'intermediate processing files such as '
+                            'uncompressed SAM files will be saved for '
+                            'later inspection'
+                        }]
+                    ]
+                }]
+            }]
+        }, {
+            'command': 'analysis',
+            'help': 'stats and other analyses',
+            'sub_tree': [
+
+                {
+                    'dest': 'analysis_command',
+                    'title': 'analysis modules',
+                    'help': 'analysis commands',
+                    'required': True,
+                    'subcommands': [{
+                        'command': 'deseq2',
+                        'help': 'DESeq2 fold change analyses in R',
+                        'title': 'DESeq2 based analyses',
+                        'func': analysis.deseq2,
+                        'sub_tree': [
+                            ['--config-file', {
+                                'type': argparse.FileType('r'),
+                                'required': True,
+                                'help': 'input configuration file'
+                            }],
+                            ['--output', {
+                                'type': str,
+                                'required': True,
+                                'help': 'output file prefix, defaults to'
+                                '{groupA name}_vs_{groupB name}'
+                            }],
+                            ['--group-A', {
+                                'type': str,
+                                'help': 'name of sample condition of first group'
+                            }],
+                            ['--group-B', {
+                                'type': str,
+                                'help': 'name of sample condition of second group'
+                            }],
+                            ['--regroup-A', {
+                                'type': str,
+                                'help': 'ad-hoc first group, e.g. EPS=uMax1,uMax2'
+                            }],
+                            ['--regroup-B', {
+                                'type': str,
+                                'help': 'ad-hoc second group, e.g. EPS=uMax1,uMax2'
+                            }],
+                            ['--shrinkage', {
+                                'type': str,
+                                'choices': ['normal', 'apeglm', 'ashr'],
+                                'default': 'apeglm',
+                                'help': 'method for shrinkage estimates, see DESeq2 docs'
+                            }],
+                            ['--transformation', {
+                                'type': str,
+                                'choices': ['vst', 'rlog'],
+                                'default': 'vst',
+                                'help': 'variable stabilizing transformation or regularized log'
+                            }],
+                            ['--generate-figures', {
+                                'action': 'store_true',
+                                'default': False,
+                                'help': 'should figures be generated, default is False'
+                            }]
+
+                        ]
+                    }, {
+                        'command': 'example',
+                        'help': 'Example template of an analysis module',
+                        'func': analysis.example,
+                        'title': 'example template',
+                        'sub_tree': [
+                            ['--config-file', {
+                                'type': argparse.FileType('r'),
+                                'required': True,
+                                'help': 'input configuration file'
+                            }],
+                            ['--integer-parameter', {
+                                'type': int,
+                                'help': 'example typed argument to analysis'
+                            }]
+                        ]
+                    }]
+                }
+
+            ]
+        }, {
+            'command': 'extract',
+            'help': 'data extraction utility',
+            'func': extract.extract,
+            'sub_tree': [
+                ['--config-file', {
+                    'type': argparse.FileType('r'),
+                    'required': True,
+                    'help': 'input configuration file'
+                }],
+                ['--output', {
+                    'type': argparse.FileType('wb'),
+                    'required': True,
+                    'help': 'output filename prefix'
+                }],
+                ['--values', {
+                    'choices': ['TPM', 'raw', 'RPKM'],
+                    'default': 'TPM',
+                    'help': 'what values should be exported'
+                }],
+                ['--format', {
+                    'choices': ['tsv', 'csv', 'xls'],
+                    'default': 'tsv',
+                    'help': 'what file format should be used for the output'
+                }],
+                ['--samples', {
+                    'nargs': '*',
+                    'help': 'what samples should be included in the output'
+                }]
+
+            ]
+        }, {
+            'command': 'config',
+            'help': 'config file utility',
+            'sub_tree': [{
+                'title': 'config file utility',
+                'dest': 'config_command',
+                'required': True,
+                'help': 'config management commands',
+                'subcommands': [{
+                        'command': 'create',
+                        'title': 'config file creation utility',
+                        'help': 'creating a config file from scratch',
+                        'func': config.create,
+                        'sub_tree': [
+                            ['--config-file', {
+                                'type': argparse.FileType('w+'),
+                                'required': True,
+                                'help': 'output configuration file'
+                            }],
+                            ['--project-dir', {
+                                'type': str,
+                                'required': True,
+                                'help': 'path to project directory; '
+                                'this should be a full path'
+                            }],
+                            ['--project-name', {
+                                'type': str,
+                                'required': True,
+                                'help': 'human readable name of project'
+                            }],
+                            ['--bwa-path', {
+                                'type': str,
+                                'default': 'bwa',
+                                'help': 'path to bwa executable'
+                            }],
+                            ['--samtools-path', {
+                                'type': str,
+                                'default': 'samtools',
+                                'help': 'path to samtools executable'
+                            }],
+                            ['--htseq-count-path', {
+                                'type': str,
+                                'default': 'htseq-count',
+                                'help': 'path to htseq-count executable'
+                            }],
+                            ['--R-path', {
+                                'type': str,
+                                'default': 'R',
+                                'help': 'path to R executable'
+                            }],
+                            ['--reference-name', {
+                                'type': str,
+                                'required': True,
+                                'help': 'human readable name of '
+                                'reference species'
+                            }],
+                            ['--reference-gff-path', {
+                                'type': str,
+                                'required': True,
+                                'help': 'path to reference GFF file'
+                            }],
+                            ['--reference-fasta-path', {
+                                'type': str,
+                                'required': True,
+                                'help': 'path to reference nucleotide '
+                                'FASTA file'
+                            }],
+                            ['--pair-ended', {
+                                'action': 'store_true',
+                                'default': False,
+                                'help': 'this study\'s data '
+                                'is from pair-ended sequencing runs'
+                            }],
+                            ['--opts-bwa-mem', {
+                                'type': str,
+                                'help': 'passthrough options for bwa in '
+                                'mem mode step'
+                            }],
+                            ['--opts-samtools-sam2bam', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'SAM to BAM conversion step'
+                            }],
+                            ['--opts-samtools-sort', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'BAM sort step'
+                            }],
+                            ['--opts-index-mem', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'BAM index step'
+                            }],
+                            ['--opts-htseq-count', {
+                                'type': str,
+                                'help': 'passthrough options for '
+                                'htseq-count step'
+                            }]
+                        ]
+                    },
+                    {
+                        'command': 'edit',
+                        'help': 'help for editing a config file',
+                        'func': config.edit,
+                        'sub_tree': [
+                            ['--config-file', {
+                                'type': argparse.FileType('r+'),
+                                'required': True,
+                                'help': 'output configuration file'
+                            }],
+                            ['--project-dir', {
+                                'type': str,
+                                'required': False,
+                                'help': 'path to project directory; '
+                                'this should be a full path'
+                            }],
+                            ['--project-name', {
+                                'type': str,
+                                'required': False,
+                                'help': 'human readable name of project'
+                            }],
+                            ['--bwa-path', {
+                                'type': str,
+                                'default': None,
+                                'required': False,
+                                'help': 'path to bwa executable'
+                            }],
+                            ['--samtools-path', {
+                                'type': str,
+                                'default': None,
+                                'required': False,
+                                'help': 'path to samtools executable'
+                            }],
+                            ['--htseq-count-path', {
+                                'type': str,
+                                'default': None,
+                                'required': False,
+                                'help': 'path to htseq-count executable'
+                            }],
+                            ['--R-path', {
+                                'type': str,
+                                'default': 'R',
+                                'required': False,
+                                'help': 'path to R executable'
+                            }],
+                            ['--reference-name', {
+                                'type': str,
+                                'required': False,
+                                'help': 'human readable name of '
+                                'reference species'
+                            }],
+                            ['--reference-gff-path', {
+                                'type': str,
+                                'required': False,
+                                'help': 'path to reference GFF file'
+                            }],
+                            ['--reference-fasta-path', {
+                                'type': str,
+                                'required': False,
+                                'help': 'path to reference nucleotide '
+                                'FASTA file'
+                            }],
+                            ['--pair-ended', {
+                                'action': 'store_true',
+                                'default': None,
+                                'help': 'this study\'s data '
+                                'is from pair-ended sequencing runs'
+                            }],
+                            ['--opts-bwa-mem', {
+                                'type': str,
+                                'help': 'passthrough options for bwa in '
+                                'mem mode step'
+                            }],
+                            ['--opts-samtools-sam2bam', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'SAM to BAM conversion step'
+                            }],
+                            ['--opts-samtools-sort', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'BAM sort step'
+                            }],
+                            ['--opts-index-mem', {
+                                'type': str,
+                                'help': 'passthrough options for samtools in '
+                                'BAM index step'
+                            }],
+                            ['--opts-htseq-count', {
+                                'type': str,
+                                'help': 'passthrough options for '
+                                'htseq-count step'
+                            }]
+                        ]
+                    }
+                ]
+            }]
+        }]
+    }
+]
 
 def main():
     """Main entry point into command line tool for this package.
@@ -46,65 +501,38 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-# Modified from argparse-subparser-monolithic-help-output for recursion
-class _HelpAction(argparse._HelpAction):
-    """This object is used to provide a custom help action.
+def parser_create_from_tree(parse_tree, root):
+    """Recursive function for building parse tree from data structure.
 
-    This object is designed to produce a complete help listing at the top
-    level of the command.  Purely a convienence, but a nice one.
+    The PARSE_TREE object at the top of this file contains the layout
+    of the command line user interface (i.e. its parse tree).  That object
+    is used by this function to build the parse tree with ``argparse``
+    by recursing that data structure's tree.  It is easier to manage the
+    user interface by modifying the data structure than several hundred
+    function calls in the same pattern.
     """
-
-    def _recurse_parser(self, parser, prefix):
-        """Method to recurse an argparse parse tree while printing.
-
-        This recursive function enumerates the argparse parse tree
-        while printing the help text for each element in the tree.
-        Between elements, a line made of ``-`` delineates pages.
-
-        Recursive
-
-        Side effect: prints to stdout
-        """
-        # retrieve subparsers from parser
-        subparsers_actions = [
-                action for action in parser._actions
-                    if isinstance(action, argparse._SubParsersAction)
-                ]
-        # there will probably only be one subparser_action,
-        # but better safe than sorry
-        for subparsers_action in subparsers_actions:
-            # get all subparsers and print help
-            for choice, subparser in subparsers_action.choices.items():
-                if not prefix:
-                    new_prefix = choice
-                else:
-                    new_prefix = prefix + ' ' + choice
-                print('\n{0} {1}'.format(new_prefix,
-                                    (78 - len(new_prefix)) * '-'))
-                print(subparser.format_help())
-                # recurse through subparsers if they exist
-                self._recurse_parser(subparser, new_prefix)
-    
-    def __call__(self, parser, namespace, values, option_string=None):
-        """Entry point to help action for argparse trees
-
-        This is the top level help printer for an argparse tree of 
-        sub-commands (subparsers).  It prints the top level help,
-        recurses the tree while printing each elements help text
-        and then exits the parser.
-        """
-        parser.print_help()
-        self._recurse_parser(parser, '')
-        parser.exit()
-
-
-def _value_is_positive(value):
-    """Type checker for argparse parser that requires an int >=1.
-    """
-    ivalue = int(value)
-    if ivalue < 1:
-        raise argparse.ArgumentTypeError(
-                '{0} must be >= 1'.format(ivalue))
+    for arg in parse_tree:
+        if isinstance(arg, list):
+            #print(f'{arg[0]}')
+            root.add_argument(arg[0], **arg[1])
+        elif isinstance(arg, dict):
+            subparser = root.add_subparsers(title=arg['title'],
+                    help=arg['help'], dest=arg['dest'])
+            if 'required' in arg.keys():
+                if arg['required']:
+                    subparser.required = True
+            for subcmd in arg['subcommands']:
+                #print(f'{subcmd["command"]}')
+                child_parser = subparser.add_parser(subcmd['command'],
+                            help=subcmd['help'])
+                if 'func' in subcmd.keys():
+                    child_parser.set_defaults(func=subcmd['func'])
+                if 'sub_tree' in subcmd.keys():
+                    parser_create_from_tree(subcmd['sub_tree'], child_parser)
+                
+        else:
+            raise TypeError(f'unexpected object of type {type(toplvl)} '
+                'found in parse tree')
 
 
 def parser_create():
@@ -118,339 +546,6 @@ def parser_create():
 
     """
     # create the top-level parser for sub-commands
-    parser = argparse.ArgumentParser(prog=barrelseq.SCRIPT_NAME, add_help=False)
-    parser.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser.add_argument('--version', action='version', 
-            version='{0} {1}'.format(barrelseq.SCRIPT_NAME,
-                barrelseq.__version__
-                )
-            )
-    subparsers = parser.add_subparsers(
-            title='{0} commands'.format(barrelseq.SCRIPT_NAME),
-            dest='command'
-            )
-    subparsers.required = True
-
-    # config sub-command parser
-    parser_config = subparsers.add_parser('config',
-            help='config file utility help',
-            add_help=False
-            )
-    parser_config.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    subparser_config = parser_config.add_subparsers(
-            title='config file utility commands',
-            help='config file module help',
-            dest='config_command'
-            )
-    subparser_config.required = True
-    # config create sub-command parser
-    parser_config_create = subparser_config.add_parser('create',
-            help='help for creating a config file',
-            add_help=False
-            )
-    parser_config_create.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    def _parser_config_editor_add_args(parser_config_editor,
-            enforce_required=True, use_default=True):
-        # note the following is required regardless of enforce_required value
-        parser_config_editor.add_argument('--config-file',
-            type=argparse.FileType('r+' if not enforce_required else 'w+'),
-            required=True, help='output configuration file'
-            )
-        parser_config_editor.add_argument('--project-name', 
-            required=enforce_required,
-            help='human readable name of project'
-            )
-        parser_config_editor.add_argument('--bwa-path',
-            type=str,
-            help='path to bwa executable',
-            default='bwa' if use_default else None
-            )
-        parser_config_editor.add_argument('--samtools-path',
-            type=str,
-            help='path to samtools executable',
-            default='samtools' if use_default else None
-            )
-        parser_config_editor.add_argument('--htseq-count-path',
-            type=str,
-            help='path to htseq-count executable',
-            default='htseq-count' if use_default else None
-            )
-        parser_config_editor.add_argument('--R-path', type=str,
-            help='path to R executable',
-            default='R' if use_default else None
-            )
-        parser_config_editor.add_argument('--project-dir',
-            required=enforce_required, help='path to project directory; '
-                'this should be a full path, thus it starts with /'
-            )
-        parser_config_editor.add_argument('--reference-name',
-            type=str,
-            required=enforce_required,
-            help='human readable name of reference species'
-            )
-        parser_config_editor.add_argument('--reference-gff-path', 
-            type=str,
-            required=enforce_required, help='path to reference GFF file'
-            )
-        parser_config_editor.add_argument('--reference-fasta-path',
-            type=str,
-            required=enforce_required,
-            help='path to reference nucleotide FASTA file'
-            )
-        parser_config_editor.add_argument('--pair-ended',
-            action='store_true',
-            default=False if use_default else None,
-            help='this study\'s data is from pair-ended sequencing runs'
-            )
-        parser_config_editor.add_argument('--opts-bwa-mem', type=str,
-            help='passthrough options for bwa in mem mode step'
-            )
-        parser_config_editor.add_argument('--opts-htseq-count', type=str,
-            help='passthrough options for htseq-count step'
-            )
-        parser_config_editor.add_argument('--opts-samtools-sam2bam', type=str,
-            help='passthrough options for samtools SAM to BAM conversion step'
-            )
-        parser_config_editor.add_argument('--opts-samtools-sort', type=str,
-            help='passthrough options for samtools BAM sort step'
-            )
-        parser_config_editor.add_argument('--opts-samtools-index', type=str,
-            help='passthrough options for samtools BAM index step'
-            )
-        return
-    _parser_config_editor_add_args(parser_config_create);
-    parser_config_create.set_defaults(func=config.create)
-    # config editor sub-command parser
-    parser_config_edit = subparser_config.add_parser('edit',
-            help='help for editing a config file',
-            add_help=False
-            )
-    parser_config_edit.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    _parser_config_editor_add_args(parser_config_edit,
-            enforce_required=False,
-            use_default=False)
-    parser_config_edit.set_defaults(func=config.edit)
-    # config validate sub-command parser
-    parser_config_validate = subparser_config.add_parser('validate',
-            help='help for validating a config file',
-            add_help=False
-            )
-    parser_config_validate.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_config_validate.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='input configuration file for validation'
-            )
-    parser_config_validate.set_defaults(func=config.validate)
-
-    # sample sub-command parser
-    parser_sample = subparsers.add_parser('sample',
-            help='sample management help',
-            add_help=False
-            )
-    parser_sample.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    subparser_sample = parser_sample.add_subparsers(
-            title='sample management commands',
-            help='sample management help',
-            dest='sample_command'
-            )
-    subparser_sample.required = True
-    # sample add sub-command parser
-    parser_sample_add = subparser_sample.add_parser('add',
-            help='help for adding a sample',
-            add_help=False
-            )
-    parser_sample_add.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='configuration file'
-            )
-    parser_sample_add.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_sample_add.add_argument('--name', required=True,
-            help='name of sample to be added; must start with a letter '
-            'and contain only letters, numbers and underscores(_)'
-            )
-    parser_sample_add.add_argument('--group', required=True,
-            help='name of group this sample belong to; will be added if '
-            'it doesn\'t exist; must start with a letter and contain only '
-            'letters, numbers and underscores'
-            )
-    parser_sample_add.add_argument('--fastq-files', required=True,
-            help='list of full pathes to fastq file; separated by spaces',
-            nargs='+'
-            )
-    parser_sample_add.add_argument('--description', required=True,
-            help='complete description of sample; in single quotes, '
-            'not containing any tabs or new lines'
-            )
-    parser_sample_add.set_defaults(func=sample.add)
-    # sample remove sub-command parser
-    parser_sample_remove = subparser_sample.add_parser('remove',
-            help='help for removing a sample - DANGER',
-            add_help=False
-            )
-    parser_sample_remove.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_sample_remove.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='configuration file'
-            )
-    parser_sample_remove.add_argument('--name', required=True,
-            help='name of sample to be removed - DANGER! - this will '
-            'remove a sample from the sample metadata file and may '
-            'remove alignment and summary files (workspace files)'
-            )
-    parser_sample_remove.add_argument('--dont-remove-files',
-            help='workspace files for sample will be preserved'
-            )
-    parser_sample_remove.set_defaults(func=sample.remove)
-
-    # engine sub-command parser
-    parser_engine = subparsers.add_parser('engine',
-            help='execution engine help',
-            add_help=False
-            )
-    parser_engine.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    subparser_engine = parser_engine.add_subparsers(
-            title='execution engine commands',
-            help='execution engine module help',
-            dest='engine_command'
-            )
-    subparser_engine.required = True
-    parser_engine_run = subparser_engine.add_parser('run',
-            help='execution engine run mode help',
-            add_help=False
-            )
-    parser_engine_run.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_engine_run.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='input configuration file'
-            )
-    parser_engine_run.add_argument('--processes', type=_value_is_positive,
-            help='number of parallel processes to run'
-            )
-    parser_engine_run.add_argument('--samples',
-            nargs='*',
-            help='what samples should processed; default is all that are unprocessed'
-            )
-    parser_engine_run.add_argument('--save-as-script', action='store_true',
-            help='instead of running the analysis, generate shell scripts to run the commands; useful for manual inspection of the commands or for submission to a queueing system'
-            )
-    parser_engine_run.add_argument('--save-intermediate-files',
-            action='store_true',
-            help='intermediate processing files such as uncompressed SAM files will be saved for later inspection'
-            )
-    parser_engine_run.set_defaults(func=engine.run)
-
-    # analysis sub-command parser
-    parser_analysis = subparsers.add_parser('analysis',
-            help='data analysis help',
-            add_help=False
-            )
-    parser_analysis.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    subparser_analysis = parser_analysis.add_subparsers(
-            title='analysis commands',
-            help='analysis module help',
-            dest='analysis_command'
-            )
-    subparser_analysis.required = True
-    # deseq2 sub-command parser
-    parser_deseq2 = subparser_analysis.add_parser('deseq2',
-            help='DESeq2 analysis help',
-            add_help=False
-            )
-    parser_deseq2.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_deseq2.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='input configuration file'
-            )
-    parser_deseq2.add_argument('--output', type=str, required=True,
-            help='output file prefix, defaults to '
-            '{groupA name}_vs_{groupB name}')
-    # two mutally exclusive groups make sure we always have one A and one B
-    groupA = parser_deseq2.add_mutually_exclusive_group(required=True)
-    groupA.add_argument('--group-A', type=str,
-            help='name of sample condition of first group')
-    groupA.add_argument('--regroup-A', type=str,
-            help='ad-hoc first group, e.g. EPS=uMax1,uMax2')
-    groupB = parser_deseq2.add_mutually_exclusive_group(required=True)
-    groupB.add_argument('--group-B', type=str,
-            help='name of sample condition of second group')
-    groupB.add_argument('--regroup-B', type=str,
-            help='ad-hoc second group, e.g. EPS=uMax1,uMax2')
-    parser_deseq2.add_argument('--shrinkage', 
-            choices=['normal', 'apeglm', 'ashr'],
-            default='apeglm',
-            help='method for shrinkage estimates, see DESeq2 docs'
-            )
-    parser_deseq2.add_argument('--transformation',
-            choices=['vst', 'rlog'],
-            default='vst',
-            help='variable stabilizing transformation or regularized log'
-            )
-    parser_deseq2.add_argument('--generate-figures',
-            help='should figures be generated'
-            )
-    parser_deseq2.set_defaults(func=analysis.deseq2)
-    # example sub-command parser as template for future analyses
-    parser_example = subparser_analysis.add_parser('example', 
-            help='example analysis help',
-            add_help=False
-            )
-    parser_example.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_example.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='input configuration file'
-            )
-    parser_example.add_argument('--integer-parameter', type=int,
-            help='example integer parameter for analysis'
-            )
-    parser_example.set_defaults(func=analysis.example)
-
-    # extract sub-command parser
-    parser_extract = subparsers.add_parser('extract',
-            help='data extraction help',
-            add_help=False
-            )
-    parser_extract.add_argument('--help', action=_HelpAction,
-            help='full help listing'
-            )
-    parser_extract.add_argument('--config-file', type=argparse.FileType('r'),
-            required=True, help='input configuration file'
-            )
-    parser_extract.add_argument('--output', type=argparse.FileType('wb'),
-            required=True, help='output filename'
-            )
-    parser_extract.add_argument('--values',
-            choices=['TPM', 'raw', 'RPKM'],
-            default='TPM',
-            help='what values should be exported'
-            )
-    parser_extract.add_argument('--format',
-            choices=['tsv', 'csv', 'xls'],
-            default='tsv',
-            help='what file format should be used for the output'
-            )
-    parser_extract.add_argument('--samples',
-            nargs='*',
-            help='what samples should be included in the output'
-            )
-    parser_extract.set_defaults(func=extract)
+    parser = argparse.ArgumentParser(prog=barrelseq.SCRIPT_NAME)
+    parser_create_from_tree(PARSE_TREE, parser)
     return parser
