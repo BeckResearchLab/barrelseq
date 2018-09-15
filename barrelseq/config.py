@@ -1,8 +1,10 @@
 import argparse
+import os
 import types
 
 import yaml
 
+from barrelseq import sample
 
 CONFIG_ARGS_KEY_EXCLUDED = ['config_file', 'command', 'config_command', 'func']
 REQUIRED_CONFIG_OPTS = ['project_dir', 'project_name', 'reference_fasta_path',
@@ -82,8 +84,15 @@ def validate(args):
     config_dict = vars(config)
     for option in REQUIRED_CONFIG_OPTS:
         if option not in config_dict:
-            raise RuntimeError('Required config option {0} is missing from '
-                    'the config file {1}'.format(option, args.config_file))
+            raise RuntimeError('required config option {} is missing from '
+                    'the config file {}'.format(option, args.config_file))
+    if not os.path.isdir(config.project_dir):
+        raise RuntimeError('project directory {} does not'
+                'exist'.format(config.project_dir))
+    sample_file = os.path.join(config.project_dir, sample.SAMPLE_INFO_FILE)
+    if not os.path.isfile(sample_file):
+        print('WARNING: unable to find existing sample info file\n\t'
+                'if you are just getting started you can ignore this')
     print('config file validation succeeded')
     return config
 
