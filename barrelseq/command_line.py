@@ -118,6 +118,23 @@ PARSE_TREE = [
                         }]
                     ]
                 }, {
+                    'command': 'view',
+                    'help': 'view sample information',
+                    'title': 'view sample',
+                    'func': sample.view,
+                    'sub_tree': [
+                        ['--config-file', {
+                            'type': argparse.FileType('r'),
+                            'required': True,
+                            'help': 'input configuration file'
+                        }],
+                        ['--name', {
+                            'type': str,
+                            'required': True,
+                            'help': 'name of sample to be viewed'
+                        }]
+                    ]
+                }, {
                     'command': 'remove',
                     'help': 'removing samples - DANGER!',
                     'title': 'sample remove',

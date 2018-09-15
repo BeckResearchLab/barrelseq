@@ -112,6 +112,21 @@ def add(args):
     return
 
 
+def log_append(log_text, msg):
+    log = json.loads(log_text)
+    log.append({'ts':pd.Timestamp.now().strftime('%c'),
+            'msg':msg})
+    return json.dumps(log)
+
+
+def view(args):
+    cfg = config.validate(args)
+    samples = load(cfg)
+    sample_info = samples.loc[samples['name'] == args.name]
+    print(sample_info)
+    return
+
+
 def edit(args):
     cfg = config.validate(args)
     samples = load(cfg)
