@@ -60,7 +60,7 @@ PARSE_TREE = [
                         ['--group', {
                             'type': str,
                             'required': True,
-                            'help': 'name of group this sample belong '
+                            'help': 'name of group this sample belongs '
                             'to; will be added if it doesn\'t exist; '
                             'must start with a letter and contain '
                             'only letters, numbers and underscores'
@@ -75,6 +75,46 @@ PARSE_TREE = [
                             'help': 'complete description of sample; in'
                             'single quotes not containing any tabs or'
                             'new lines'
+                        }]
+                    ]
+                }, {
+                    'command': 'edit',
+                    'help': 'editing sample info',
+                    'title': 'sample edit',
+                    'func': sample.edit,
+                    'sub_tree': [
+                        ['--config-file', {
+                            'type': argparse.FileType('r'),
+                            'required': True,
+                            'help': 'input configuration file'
+                        }],
+                        ['--name', {
+                            'type': str,
+                            'required': True,
+                            'help': 'name of sample to be edited'
+                        }],
+                        ['--rename', {
+                            'type': str,
+                            'help': 'new name of sample that is being edited'
+                        }],
+                        ['--group', {
+                            'type': str,
+                            'help': 'new name of group this sample belongs '
+                            'to; will be added if it doesn\'t exist; '
+                            'must start with a letter and contain '
+                            'only letters, numbers and underscores',
+                            'default': None
+                        }],
+                        ['--description', {
+                            'help': 'new description of sample; in'
+                            'single quotes not containing any tabs or'
+                            'new lines',
+                            'default': None
+                        }],
+                        ['--reset-last-run', {
+                            'help': 'reset the date of the last run for this'
+                            'sample',
+                            'action':'store_true'
                         }]
                     ]
                 }, {

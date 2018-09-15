@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import json
 import os
 import sys
 
@@ -10,7 +11,7 @@ from barrelseq import config
 
 SAMPLE_INFO_FILE = 'sample_info.tsv'
 SAMPLE_INFO_COLUMNS = ['name', 'group', 'fastq_files', 'description',
-            'added', 'last_run', 'last_analyzed', 'md5sums'
+            'added', 'last_run', 'last_analyzed', 'md5sums', 'log'
         ]
 CHUNK_SIZE = 1024 * 1024 * 16
 
@@ -97,12 +98,25 @@ def add(args):
         md5sums_str = ','.join(md5sums)
         # update created date
         added = pd.Timestamp.now()
+        sample_log = [{'ts':added.strftime('%c'),
+                'msg':f'sample added {args.name}, '
+                f'{args.group}, {fastq_str}, {md5sums_str}, {args.description}'}]
         samples.loc[len(samples)] = [ args.name, args.group, fastq_str,
-                args.description, added, None, None, md5sums_str
+                args.description, added, None, None, 
+                md5sums_str, json.dumps(sample_log)
             ]
     if errors:
         raise RuntimeError('at least one failure occured while '
                 'adding the sample')
+    save(cfg, samples)
+    return
+
+
+def edit(args):
+    cfg = config.validate(args)
+    samples = load(cfg)
+    # make changes based on args
+    print('WARNING: not implemented')
     save(cfg, samples)
     return
 
