@@ -159,7 +159,7 @@ def parser_create():
             enforce_required=True, use_default=True):
         # note the following is required regardless of enforce_required value
         parser_config_editor.add_argument('--config-file',
-            type=argparse.FileType('r+'),
+            type=argparse.FileType('r+' if not enforce_required else 'w+'),
             required=True, help='output configuration file'
             )
         parser_config_editor.add_argument('--project-name', 
