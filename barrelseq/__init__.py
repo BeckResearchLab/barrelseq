@@ -1,5 +1,4 @@
 from .command_line import *
-
-__version__ = '0.1.0'
+from .version import __version__
 
 SCRIPT_NAME = __name__
