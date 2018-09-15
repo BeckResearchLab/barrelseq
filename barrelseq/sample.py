@@ -70,7 +70,6 @@ def save(cfg, samples):
 def add(args):
     cfg = config.validate(args)
     samples = load(cfg)
-    print(samples)
     errors = False
     # make sure the sample doesn't already exist
     if args.name in samples.name.values:
@@ -96,7 +95,6 @@ def add(args):
                     m.update(chunk)
             md5sums.append(m.hexdigest())
         md5sums_str = ','.join(md5sums)
-        print(md5sums)
         # update created date
         added = pd.Timestamp.now()
         samples.loc[len(samples)] = [ args.name, args.group, fastq_str,
