@@ -9,8 +9,7 @@ from barrelseq import sample
 CONFIG_ARGS_KEY_EXCLUDED = ['config_file', 'command', 'config_command', 'func']
 REQUIRED_CONFIG_OPTS = ['project_dir', 'project_name', 'reference_fasta_path',
         'reference_gff_path', 'reference_name', 'bwa_path', 'samtools_path',
-        'htseq_count_path', 'R_path', 'pair_ended', 'opts_bwa_mem',
-        'opts_samtools_index', 'opts_samtools_sam2bam', 'opts_samtools_sort'
+        'htseq_count_path', 'R_path', 'pair_ended'
         ]
 
 
