@@ -185,7 +185,7 @@ PARSE_TREE = [
                             'help': 'number of parallel processes to run'
                         }],
                         ['--samples', {
-                            'nargs': '*',
+                            'nargs': '+',
                             'help': 'list of samples to be included in '
                             'analysis, otherwise all eligible will '
                             'be included'
