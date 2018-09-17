@@ -181,7 +181,7 @@ PARSE_TREE = [
                             'help': 'input configuration file'
                         }],
                         ['--processes', {
-                            'type': _value_is_positive,
+                            'type': int,
                             'help': 'number of parallel processes to run'
                         }],
                         ['--samples', {
