@@ -11,13 +11,17 @@ from barrelseq import analysis
 from barrelseq import extract
 
 
-def _value_is_positive(value):
+def positive_integer(value):
     """Type checker for argparse parser that requires an int >=1.
     """
     ivalue = int(value)
     if ivalue < 1:
         raise argparse.ArgumentTypeError(
-                '{0} must be >= 1'.format(ivalue))
+                '{0} must be >= 1'.format(value))
+    if '.' in value:
+        raise argparse.ArgumentTypeError(
+                '{0} be an integer (whole number)'.format(value))
+    return value
 
 
 PARSE_TREE = [
@@ -181,8 +185,8 @@ PARSE_TREE = [
                             'help': 'input configuration file'
                         }],
                         ['--processes', {
-                            'type': _value_is_positive,
-                            'help': 'number of parallel processes to run'
+                            'type': positive_integer,
+                            'help': 'number of parallel processes to run, integer >= 1'
                         }],
                         ['--samples', {
                             'nargs': '+',
