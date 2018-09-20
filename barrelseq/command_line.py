@@ -266,6 +266,14 @@ PARSE_TREE = [
                                 'default': 'vst',
                                 'help': 'variable stabilizing transformation or regularized log'
                             }],
+                            ['--save-as-scripts', {
+                                'action': 'store_true',
+                                'help': 'instead of running the analysis, '
+                                'generate shell scripts to run the '
+                                'commands; useful for manual inspection '
+                                'of the commands or for submission to a '
+                                'queueing system'
+                            }],
                             ['--generate-figures', {
                                 'action': 'store_true',
                                 'default': False,
