@@ -1,58 +1,77 @@
 import argparse
 import multiprocessing as mp
 import subprocess
+import os
 
 from barrelseq import config
 from barrelseq import sample
 
 
 def make_bwa_cmd(sample_row, cfg):
-    if cfg.opts_bwa_mem is not "null":
-        optional_args = cfg.opts_bwa_mem
+    sam_name = "{0}/{0}.sam".format(sample_row['name'])
+    if cfg.opts_bwa_mem is not None:
+        optional_args = " " + cfg.opts_bwa_mem + " "
     else:
-        optional_args = ""
-    return "{} mem -M -t 1 {} {} {} > {}.sam".format(cfg.bwa_path, optional_args, cfg.reference_fasta_path,
-                                                  " ".join(sample_row['fastq_files'].split(",")), sample_row['name'])
+        optional_args = " "
+    return "{} mem -M -t 1{}{} {} > {}".format(cfg.bwa_path, optional_args, cfg.reference_fasta_path,
+                                               " ".join(sample_row['fastq_files'].split(",")), sam_name)
 
 
 def make_view_cmd(name, cfg):
-    if cfg.opts_samtools_sam2bam is not "null":
-        optional_args = cfg.opts_bwa_mem
+    sam_name = "{0}/{0}.sam".format(name)
+    bam_name = "{0}/{0}.bam".format(name)
+    if cfg.opts_samtools_sam2bam is not None:
+        optional_args = " " + cfg.opts_samtools_sam2bam + " "
     else:
-        optional_args = ""
-    return "{0} view {1} -bt {2} -o {3}.bam {3}.sam".format(cfg.samtools_path,
-                                                            optional_args, cfg.reference_fasta_path, name)
+        optional_args = " "
+    return "{} view{}-bt {} -o {} {}".format(cfg.samtools_path, optional_args,
+                                             cfg.reference_fasta_path, bam_name, sam_name)
 
 
 def make_sort_cmd(name, cfg):
-    if cfg.opts_samtools_sort is not "null":
-        optional_args = cfg.opts_bwa_mem
+    bam_name = "{0}/{0}.bam".format(name)
+    sorted_name = "{0}/{0}.sorted".format(name)
+    if cfg.opts_samtools_sort is not None:
+        optional_args = " " + cfg.opts_samtools_sort + " "
     else:
-        optional_args = ""
-    return "{0} sort {1} {2}.bam {2}.sorted".format(cfg.samtools_path, optional_args, name)
+        optional_args = " "
+    return "{} sort{}{} {}".format(cfg.samtools_path, optional_args, bam_name, sorted_name)
 
 
 def make_index_cmd(name, cfg):
-    if cfg.opts_index_mem is not "null":
-        optional_args = cfg.opts_bwa_mem
+    sorted_name = "{0}/{0}.sorted.bam".format(name)
+    if cfg.opts_index_mem is not None:
+        optional_args = " " + cfg.opts_index_mem + " "
     else:
-        optional_args = ""
-    return "{} index {} {}.sorted.bam".format(cfg.samtools_path, optional_args, name)
+        optional_args = " "
+    return "{} index{}{}.sorted.bam".format(cfg.samtools_path, optional_args, sorted_name)
 
 
 def make_htseq_cmd(name, cfg):
-    if cfg.opts_htseq_count is not "null":
-        optional_args = cfg.opts_bwa_mem
+    sorted_name = "{0}/{0}.sorted.bam".format(name)
+    summary_name = "{0}/{0}.summary.dat".format(name)
+    if cfg.opts_htseq_count is not None:
+        optional_args = " " + cfg.opts_htseq_count + " "
     else:
-        optional_args = ""
-    return "python {0} {1} -f bam -m intersection-nonempty -s no -t gene -i ID {2}.sorted.bam {3} > " \
-           "{2}.summary.dat".format(cfg.htseq_count_path, optional_args, name, cfg.reference_gff_path)
+        optional_args = " "
+    return "python {}{}-f bam -m intersection-nonempty -s no -t gene -i ID {} {} > " \
+           "{}".format(cfg.htseq_count_path, optional_args, sorted_name, cfg.reference_gff_path, summary_name)
 
+
+def remove_intermediates(name):
+    intermediate_files = ["{0}/{0}.sam".format(name), "{0}/{0}.bam".format(name), "{0}/{0}.sorted.bam".format(name),
+                          "{0}/{0}.sorted.bam.index".format(name)]
+    for int_file in intermediate_files:
+        try:
+            os.remove(int_file)
+            print("Deleted: {}".format(int_file))
+        except FileNotFoundError:
+            pass
 
 def run_cmd(cmd):
     err = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
     print(err)
-    return err
+    return cmd
 
 
 def run(args):
@@ -73,7 +92,7 @@ def run(args):
         faidx_cmd = "{} faidx {}".format(cfg.samtools_path, cfg.reference_fasta_path)
         run_cmd(faidx_cmd)
 
-
+    samples['mkdir_cmd'] = samples['name'].map(lambda x: "mkdir {}".format(x))
     samples['bwa_cmd'] = samples.apply(lambda x: make_bwa_cmd(x, cfg), axis=1)
     samples['view_cmd'] = samples['name'].map(lambda x: make_view_cmd(x, cfg))
     samples['sort_cmd'] = samples['name'].map(lambda x: make_sort_cmd(x, cfg))
@@ -81,14 +100,32 @@ def run(args):
     samples['htseq_cmd'] = samples['name'].map(lambda x: make_htseq_cmd(x, cfg))
 
     cmd_list = []
-    for step in ['bwa_cmd', 'view_cmd', 'sort_cmd', 'index_cmd', 'htseq_cmd']:
-        cmd_list.extend(samples[step].tolist())
-    print(cmd_list)
+    for step in ['mkdir_cmd', 'bwa_cmd', 'view_cmd', 'sort_cmd', 'index_cmd', 'htseq_cmd']:
+        cmd_list.append(samples[step].tolist())
 
     if args.save_as_scripts:
-        pass
+        with open("alignment_cmds", 'w') as b:
+            b.write("#!/bin/bash\n\n")
+            for step in cmd_list:
+                for specific_command in step:
+                    b.write(specific_command)
+                    b.write("\n")
+                b.write("\n")
+    else:
+        for step in cmd_list:
+            if len(step) < args.processes:
+                args.processes = len(step)
 
-    print(args)
-    print('\n\n')
-    samples.to_csv("tmp.txt", sep="\t")
+            if args.processes > 1:
+                with mp.Pool(processes=args.processes) as pool:
+                    output = "\n".join(pool.map(run_cmd, step))
+            else:
+                output = ""
+                for specific_command in step:
+                    output += run_cmd(specific_command)
+            print(output)
+
+    if not args.save_intermediate_files:
+        samples['name'].map(remove_intermediates)
+
     return
