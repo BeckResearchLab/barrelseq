@@ -70,7 +70,7 @@ def save(cfg, samples):
 
 def add(args):
     cfg = config.validate(args)
-    samples = load(cfg)
+    samples = validate(cfg)
     errors = False
     # make sure the sample doesn't already exist
     if args.name in samples.name.values:
@@ -121,7 +121,7 @@ def log_append(log_text, msg):
 
 def view(args):
     cfg = config.validate(args)
-    samples = load(cfg)
+    samples = validate(cfg)
     sample_info = samples.loc[samples['name'] == args.name]
     print(sample_info)
     return
@@ -129,7 +129,7 @@ def view(args):
 
 def edit(args):
     cfg = config.validate(args)
-    samples = load(cfg)
+    samples = validate(cfg)
     # make changes based on args
     print('WARNING: not implemented')
     save(cfg, samples)
@@ -138,7 +138,7 @@ def edit(args):
 
 def remove(args):
     cfg = config.validate(args)
-    samples = load(cfg)
+    samples = validate(cfg)
     if args.name in samples.name.values:
         samples = samples[samples.name != args.name]
     else:
@@ -146,3 +146,26 @@ def remove(args):
                 'file'.format(args.name))
     save(cfg, samples)
     return
+
+
+def validate(cfg):
+    samples = load(cfg)
+    for sample in samples.name.values:
+        workspace_dir = os.path.join(cfg.workspace_dir, sample)
+        if not os.path.isdir(workspace_dir):
+            try:
+                print('WARNING: workspace directory {} does not exist for '
+                        'sample {}\n\tit will be '
+                        'created'.format(workspace_dir, sample))
+                os.mkdir(workspace_dir)
+            except OSError as e:
+                print('ERROR: unable to create workspace directory {} for '
+                        'sample {}'.format(workspace_dir, sample))
+                raise(e)
+            if not os.path.isdir(workspace_dir):
+                print('ERROR: workspace directory path for sample {} '
+                    '({}) is not a directory'.format(sample, workspace_dir))
+        else:
+            pass
+    print('sample file validation succeeded')
+    return samples

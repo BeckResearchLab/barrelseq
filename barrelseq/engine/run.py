@@ -76,7 +76,7 @@ def run_cmd(cmd):
 
 def run(args):
     cfg = config.validate(args)
-    samples = sample.load(cfg)
+    samples = sample.validate(cfg)
     # now the system is ready to go with a populated dataframe with sample info
     # and all of the system configuration data on the cfg object
     # the prints below demonstrate what attributes are on cfg and what
