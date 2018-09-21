@@ -92,6 +92,11 @@ def validate(args):
     if not os.path.isfile(sample_file):
         print('WARNING: unable to find existing sample info file\n\t'
                 'if you are just getting started you can ignore this')
+    for path2file in [x for x in REQUIRED_CONFIG_OPTS if x.endswith('_path')]:
+        if not os.path.isfile(path2file):
+            raise RuntimeError('file {} specified by the config option {} '
+                'in the config file does not '
+                'exist'.format(config_dict[path2file], path2file))
     print('config file validation succeeded')
     return config
 
