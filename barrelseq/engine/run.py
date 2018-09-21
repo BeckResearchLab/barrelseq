@@ -113,6 +113,8 @@ def run(args):
                 b.write("\n")
     else:
         for step in cmd_list:
+            if args.processes is None:
+                args.processes = 1
             if len(step) < args.processes:
                 args.processes = len(step)
 
