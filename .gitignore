@@ -60,6 +60,9 @@ db.sqlite3
 instance/
 .webassets-cache
 
+# IDEA files
+barrelseq/.idea/
+
 # Scrapy stuff:
 .scrapy
 
