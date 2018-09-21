@@ -79,6 +79,8 @@ def edit(args):
 
 
 def validate(args):
+    """Configuration file validation and load.
+    """
     config = load(args)
     config_dict = vars(config)
     for option in REQUIRED_CONFIG_OPTS:
@@ -102,6 +104,7 @@ def validate(args):
         if not os.path.isdir(config.workspace_dir):
             print('ERROR: workspace directory {} is not a '
                 'directory'.format(config.workspace_dir))
+            raise RuntimeError('unable to open workspace directory')
     else:
         pass
     sample_file = os.path.join(config.project_dir, sample.SAMPLE_INFO_FILE)
