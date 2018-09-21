@@ -61,7 +61,7 @@ instance/
 .webassets-cache
 
 # IDEA files
-barrelseq/.idea/
+**/.idea
 
 # Scrapy stuff:
 .scrapy
