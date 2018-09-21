@@ -21,7 +21,7 @@ def positive_integer(value):
     if '.' in value:
         raise argparse.ArgumentTypeError(
                 '{0} be an integer (whole number)'.format(value))
-    return value
+    return ivalue
 
 
 PARSE_TREE = [
