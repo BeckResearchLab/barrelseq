@@ -1,0 +1,8 @@
+##gff-version 3
+##sequence-region unknown 1 4984577
+# conversion-by bp_genbank2gff3.pl
+# organism Methylomicrobium buryatense
+#5GB1c
+5GB1c   GenBank gene    123     1421    .       +       1       ID=MBURv2_20001;Name=waaA;locus_tag=MBURv2_20001
+5GB1c   GenBank mRNA    123     1421    .       +       1       ID=MBURv2_20001.t01;Parent=MBURv2_20001
+5GB1c   GenBank CDS     123     1421    .       +       1       ID=MBURv2_20001.p01;Parent=MBURv2_20001.t01;eC_number=2.4.99.12,2.4.99.13;Name=waaA;inference=ab initio prediction:AMIGene:2.0;locus_tag=MBURv2_20001;product=3-deoxy-D-manno-octulosonic acid transferase;transl_table=11
