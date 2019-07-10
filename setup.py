@@ -8,5 +8,6 @@ setup(
     entry_points = {
         'console_scripts': ['barrelseq=barrelseq.command_line:main'],
     }
+    scripts = ['scripts/barrelseq']
     ...
 )
