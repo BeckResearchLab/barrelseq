@@ -77,6 +77,9 @@ def run_cmd(cmd):
 def run(args):
     cfg = config.validate(args)
     samples = sample.validate(cfg)
+
+    os.chdir(os.path.join(cfg.project_dir, "workspace"))
+
     # now the system is ready to go with a populated dataframe with sample info
     # and all of the system configuration data on the cfg object
     # the prints below demonstrate what attributes are on cfg and what
@@ -92,7 +95,6 @@ def run(args):
         faidx_cmd = "{} faidx {}".format(cfg.samtools_path, cfg.reference_fasta_path)
         run_cmd(faidx_cmd)
 
-    samples['mkdir_cmd'] = samples['name'].map(lambda x: "mkdir {}".format(x))
     samples['bwa_cmd'] = samples.apply(lambda x: make_bwa_cmd(x, cfg), axis=1)
     samples['view_cmd'] = samples['name'].map(lambda x: make_view_cmd(x, cfg))
     samples['sort_cmd'] = samples['name'].map(lambda x: make_sort_cmd(x, cfg))
@@ -100,7 +102,7 @@ def run(args):
     samples['htseq_cmd'] = samples['name'].map(lambda x: make_htseq_cmd(x, cfg))
 
     cmd_list = []
-    for step in ['mkdir_cmd', 'bwa_cmd', 'view_cmd', 'sort_cmd', 'index_cmd', 'htseq_cmd']:
+    for step in ['bwa_cmd', 'view_cmd', 'sort_cmd', 'index_cmd', 'htseq_cmd']:
         cmd_list.append(samples[step].tolist())
 
     if args.save_as_scripts:
