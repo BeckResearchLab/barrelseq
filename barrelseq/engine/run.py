@@ -13,7 +13,7 @@ def make_bwa_cmd(sample_row, cfg):
         optional_args = " " + cfg.opts_bwa_mem + " "
     else:
         optional_args = " "
-    return "{} mem -M -t 1{}{} {} > {}".format(cfg.bwa_path, optional_args, cfg.reference_fasta_path,
+    return "{} mem -M -t 1{}{} {} -o {}".format(cfg.bwa_path, optional_args, cfg.reference_fasta_path,
                                                " ".join(sample_row['fastq_files'].split(",")), sam_name)
 
 
@@ -30,12 +30,12 @@ def make_view_cmd(name, cfg):
 
 def make_sort_cmd(name, cfg):
     bam_name = "{0}/{0}.bam".format(name)
-    sorted_name = "{0}/{0}.sorted".format(name)
+    sorted_name = "{0}/{0}.sorted.bam".format(name)
     if cfg.opts_samtools_sort is not None:
         optional_args = " " + cfg.opts_samtools_sort + " "
     else:
         optional_args = " "
-    return "{} sort{}{} {}".format(cfg.samtools_path, optional_args, bam_name, sorted_name)
+    return "{} sort {} {} -o {}".format(cfg.samtools_path, optional_args, bam_name, sorted_name)
 
 
 def make_index_cmd(name, cfg):
@@ -44,7 +44,7 @@ def make_index_cmd(name, cfg):
         optional_args = " " + cfg.opts_index_mem + " "
     else:
         optional_args = " "
-    return "{} index{}{}.sorted.bam".format(cfg.samtools_path, optional_args, sorted_name)
+    return "{} index {} {}".format(cfg.samtools_path, optional_args, sorted_name)
 
 
 def make_htseq_cmd(name, cfg):
@@ -59,8 +59,9 @@ def make_htseq_cmd(name, cfg):
 
 
 def remove_intermediates(name):
-    intermediate_files = ["{0}/{0}.sam".format(name), "{0}/{0}.bam".format(name), "{0}/{0}.sorted.bam".format(name),
-                          "{0}/{0}.sorted.bam.index".format(name)]
+    # intermediate_files = ["{0}/{0}.sam".format(name), "{0}/{0}.bam".format(name), "{0}/{0}.sorted.bam".format(name),
+    #                     "{0}/{0}.sorted.bam.index".format(name)]
+    intermediate_files = ["{0}/{0}.sam".format(name), "{0}/{0}.bam".format(name)]
     for int_file in intermediate_files:
         try:
             os.remove(int_file)
@@ -85,6 +86,8 @@ def run(args):
     # the prints below demonstrate what attributes are on cfg and what
     # the schema of the sample_info table is
 
+    samples = samples.loc[samples['name'].isin(args.samples)]
+
     # If save_as_scripts is true, don't run anything, but put it all in a bash file
     # Update run date?
     faidx = cfg.reference_fasta_path + ".fai"
@@ -106,7 +109,7 @@ def run(args):
         cmd_list.append(samples[step].tolist())
 
     if args.save_as_scripts:
-        with open("alignment_cmds", 'w') as b:
+        with open("barrelseq.sh", 'w') as b:
             b.write("#!/bin/bash\n\n")
             for step in cmd_list:
                 for specific_command in step:
