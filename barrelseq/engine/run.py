@@ -86,7 +86,8 @@ def run(args):
     # the prints below demonstrate what attributes are on cfg and what
     # the schema of the sample_info table is
 
-    samples = samples.loc[samples['name'].isin(args.samples)]
+    if args.samples is not None:
+        samples = samples.loc[samples['name'].isin(args.samples)]
 
     # If save_as_scripts is true, don't run anything, but put it all in a bash file
     # Update run date?
