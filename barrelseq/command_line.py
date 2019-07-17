@@ -312,7 +312,7 @@ PARSE_TREE = [
                     'help': 'input configuration file'
                 }],
                 ['--output', {
-                    'type': argparse.FileType('wb'),
+                    'type': argparse.FileType('w'),
                     'required': True,
                     'help': 'output filename prefix'
                 }],
