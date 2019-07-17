@@ -88,6 +88,12 @@ def run(args):
 
     if args.samples is not None:
         samples = samples.loc[samples['name'].isin(args.samples)]
+    if args.samples is not None:
+        for smp in args.samples:
+            if smp not in samples['name'].values:
+                raise KeyError(f"Invalid sample name", f"The sample {smp} is not contained in the list of valid samples.")
+    samples = samples.loc[samples['name'].isin(args.samples)]
+
 
     # If save_as_scripts is true, don't run anything, but put it all in a bash file
     # Update run date?
