@@ -8,8 +8,8 @@ from barrelseq import sample
 
 CONFIG_ARGS_KEY_EXCLUDED = ['config_file', 'command', 'config_command', 'func']
 REQUIRED_CONFIG_OPTS = ['project_dir', 'project_name', 'reference_fasta_path',
-        'reference_gff_path', 'reference_name', 'bwa_path', 'samtools_path',
-        'htseq_count_path', 'R_path', 'pair_ended'
+        'reference_gff_path', 'reference_gb_path', 'reference_name', 'bwa_path', 
+        'samtools_path', 'htseq_count_path', 'R_path', 'pair_ended'
         ]
 WORKSPACE_DIR = 'workspace'
 

@@ -393,6 +393,11 @@ PARSE_TREE = [
                                 'required': True,
                                 'help': 'path to reference GFF file'
                             }],
+                            ['--reference-gb-path', {
+                                'type': str,
+                                'required': True,
+                                'help': 'path to reference Genbank file'
+                            }],
                             ['--reference-fasta-path', {
                                 'type': str,
                                 'required': True,
@@ -487,6 +492,11 @@ PARSE_TREE = [
                                 'type': str,
                                 'required': False,
                                 'help': 'path to reference GFF file'
+                            }],
+                            ['--reference-gb-path', {
+                                'type': str,
+                                'required': True,
+                                'help': 'path to reference Genbank file'
                             }],
                             ['--reference-fasta-path', {
                                 'type': str,
