@@ -58,8 +58,8 @@ def make_locus_info_dict(gb_file):
                 # extract relevant info about genes
                 locus_info['locus'] = gb_rec.id
                 locus_info['gene_symbol'] = "" if 'gene' not in feature.qualifiers else feature.qualifiers['gene'][0]
-                locus_info['product'] = feature.qualifiers['product']
-                locus_info['note'] = feature.qualifiers['note']
+                locus_info['product'] = feature.qualifiers['product'][0]
+                locus_info['note'] = feature.qualifiers['note'][0]
                 locus_info['translation'] = str(feature.translate(gb_rec).seq)
                 
             # add this info to the bigger dictionary
@@ -132,7 +132,7 @@ def calculate_tpm(original_df, sample_cols):
         df[tpm_col] = df[rpk_col]/rpk_scale_factor
     
     # initialze a new TPM only df with the gene info columns
-    tpm_df = df[['locus_tag']+GENE_INFO_COLS+tpm_cols]
+    tpm_df = df[['locus_tag']+GENE_INFO_COLS+['gene_len']+tpm_cols]
     
     # Right now, the columns all have "_tpm" appended to them... maybe this 
     # is a bad idea. Happy to change it if that's annoying but maybe it will 
